@@ -3,8 +3,10 @@ package kalpas.VK;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
+import kalpas.VK.requests.FriendsGet;
+import kalpas.VK.requests.FriendsGetFactory;
+import kalpas.VK.requests.base.BaseVKRequest;
+
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
@@ -23,9 +25,11 @@ public class VK {
 
     private static final String appId = "3164748";
     private static String auth = "https://oauth.vk.com/authorize";
-
+    
     private String accessToken = null;
     private String uid = null;
+
+    private FriendsGetFactory friendsGetFactory = null;
 
     public String getAccessToken() {
         return accessToken;
@@ -81,9 +85,9 @@ public class VK {
         uriBuilder.append(auth);
         uriBuilder.append("?");
         uriBuilder.append("client_id=" + appId + "&");
-        uriBuilder.append("scope=friends,stats&");
+        uriBuilder.append("scope=friends,notify,wall&");
         uriBuilder.append("redirect_uri=http://oauth.vk.com/blank.html&");
-        uriBuilder.append("display=popup&");
+        uriBuilder.append("display=page&");
         uriBuilder.append("response_type=token");
 
         browser.setUrl(uriBuilder.toString());
@@ -93,16 +97,49 @@ public class VK {
         display.dispose();
 
     }
+    
+    public void request(String body) {
 
-    public List<String> getFriendsList() {
+        String[] parts = body.split(" ");
+        final String name_ = parts[0];
+        final String body_ = parts[1];
+
+        BaseVKRequest request = new BaseVKRequest() {
+
+            public String getName() {
+                return name_;
+            }
+
+            public String getBody() {
+                return body_;
+            }
+
+            @Override
+            protected String getAccessToken() {
+                return accessToken;
+            }
+        };
+
+        request.send();
+
+    }
+
+    public List<String> getFriendsList(String uid) {
 
         List<String> result = Collections.<String> emptyList();
         if (!Strings.isNullOrEmpty(accessToken)) {
-            HttpClient client = new DefaultHttpClient();
+            if (friendsGetFactory == null) {
+                friendsGetFactory = new FriendsGetFactory(accessToken);
+            }
+            FriendsGet request = friendsGetFactory.createRequest();
+            request.addUid(uid).send();
         }
 
         return result;
     }
 
+    public List<String> getFriendsList() {
+        return getFriendsList(this.uid);
+    }
 
 }

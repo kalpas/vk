@@ -5,5 +5,6 @@ public interface VKRequest {
     public void send();
 
     public String getName();
-
+    
+    public String getBody();
 }

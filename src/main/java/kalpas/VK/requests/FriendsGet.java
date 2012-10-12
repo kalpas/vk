@@ -1,17 +1,19 @@
 package kalpas.VK.requests;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
+import kalpas.VK.App;
 import kalpas.VK.requests.base.BaseVKRequest;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.log4j.Logger;
 
 import com.google.common.base.Joiner;
 
 public class FriendsGet extends BaseVKRequest {
+
+    private Logger logger = Logger.getLogger(App.class);
 
     private final String requestName = "friends.get";
     private String accessToken = null;
@@ -28,15 +30,14 @@ public class FriendsGet extends BaseVKRequest {
 
     // request params
     private String uid = null;
-    private List<String> selectedFields = Collections.<String> emptyList();
+    private List<String> selectedFields = new ArrayList<String>();
     private String nameCase = null;
     private Integer count = null;
     private Integer offset = null;
     private String lid = null;
     private String order = null;
 
-    private HttpClient client = new DefaultHttpClient();
-
+    @SuppressWarnings("unused")
     private FriendsGet() {
     }
 
@@ -44,21 +45,16 @@ public class FriendsGet extends BaseVKRequest {
         this.accessToken = accessTokenn;
     }
 
-    public void send() {
-
-    }
-
     public String getName() {
         return requestName;
     }
 
-    String buildRequest() {
+    public String getBody() {
         return Joiner
                 .on("&")
                 .skipNulls()
-                .join(super.buildBaseRequest(), getUid(), getFileds(),
-                        getNameCase(), getCount(), getOffset(), getLid(),
-                        getOrder(), "accessToken=" + accessToken);
+                .join(getUid(), getFileds(), getNameCase(), getCount(),
+                        getOffset(), getLid(), getOrder());
     }
 
     public FriendsGet addUid(String uid) {
@@ -66,14 +62,31 @@ public class FriendsGet extends BaseVKRequest {
         return this;
     }
 
-    public FriendsGet addField(String field) {
-        if (allowedFields.contains(field)) {
-            selectedFields.add(field);
-        } else
-            throw new IllegalArgumentException(field + " field is Illegal");
+    /**
+     * 
+     * @param field
+     *            could be one of "uid", "first_name", "last_name", "nickname",
+     *            "sex", "bdate", "city", "country", "timezone", "photo",
+     *            "photo_medium", "photo_big", "domain", "has_mobile", "rate",
+     *            "contacts", "education"
+     * @return
+     */
+    public FriendsGet addField(String... fields) {
+        for (String field : fields) {
+            if (allowedFields.contains(field)) {
+                selectedFields.add(field);
+            } else
+                throw new IllegalArgumentException(field + " field is Illegal");
+        }
         return this;
     }
 
+    /**
+     * 
+     * @param nameCase
+     *            could be one of "nom", "gen", "dat", "acc", "ins", "abl"
+     * @return
+     */
     public FriendsGet addNameCase(String nameCase) {
         if (allowedCases.contains(nameCase)) {
             this.nameCase = nameCase;
@@ -97,7 +110,13 @@ public class FriendsGet extends BaseVKRequest {
         this.lid = lid;
         return this;
     }
-    
+
+    /**
+     * 
+     * @param order
+     *            could be "name", "hints"
+     * @return
+     */
     public FriendsGet addOrder(String order) {
         if (allowedOrdering.contains(order)) {
             this.order = order;
@@ -134,4 +153,13 @@ public class FriendsGet extends BaseVKRequest {
     private String getOrder() {
         return order != null ? "order" + order : null;
     }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
 }

@@ -8,12 +8,12 @@ import org.apache.log4j.Logger;
  * 
  */
 public class App {
-	static private Logger logger = Logger.getLogger(App.class);
+    static private Logger logger = Logger.getLogger(App.class);
 
-	public static void main(String[] args) 
-	{
-		BasicConfigurator.configure();
-		Controller.getInstance().start();
+    public static void main(String[] args) {
+        BasicConfigurator.configure();
+        logger.info("Started");
+        Controller.getInstance().start();
 
-	}
+    }
 }

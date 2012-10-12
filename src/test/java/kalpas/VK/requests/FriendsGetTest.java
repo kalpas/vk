@@ -1,5 +1,6 @@
 package kalpas.VK.requests;
 
+import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -7,6 +8,9 @@ public class FriendsGetTest {
     
     FriendsGetFactory factory;
     FriendsGet request;
+    static {
+        BasicConfigurator.configure();
+    }
 
     @Before
     public void before()
@@ -17,8 +21,9 @@ public class FriendsGetTest {
 
     @Test
     public void test() {
-        System.out.println(request.buildRequest());
+        request.send();
     }
     
+
 
 }
