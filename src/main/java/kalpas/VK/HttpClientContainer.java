@@ -18,6 +18,7 @@ public class HttpClientContainer {
     public static HttpClient getInstance() {
         if (instance == null) {
             PoolingClientConnectionManager manager = new PoolingClientConnectionManager();
+            manager.setMaxTotal(200);
             instance = new DefaultHttpClient(manager);
             instance.getParams().setParameter(ClientPNames.COOKIE_POLICY,
                     CookiePolicy.IGNORE_COOKIES);

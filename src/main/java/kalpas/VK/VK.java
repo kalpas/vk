@@ -2,16 +2,16 @@ package kalpas.VK;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
-import kalpas.VK.requests.FriendsGet;
 import kalpas.VK.requests.FriendsGetFactory;
 import kalpas.VK.requests.base.BaseVKRequest;
 
@@ -30,22 +30,41 @@ import org.eclipse.swt.widgets.Shell;
 import com.google.common.base.Strings;
 
 public class VK {
+    private class RunnableFrinedsGet implements Callable<List<VKFriend>> {
+
+        private String                        uid;
+
+        public RunnableFrinedsGet(String uid) {
+            this.uid = uid;
+        }
+
+        @Override
+        public List<VKFriend> call() {
+            long start, end;
+            start = System.nanoTime();
+            List<VKFriend> result = getFriendsList(uid);
+            end = System.nanoTime();
+            logger.debug("getting friend list took " + (end - start) * 1E-6
+                    + " ms");
+
+            return result;
+        }
+    }
+
     private static final int    MIN_PAUSE         = 340;
 
     Logger                      logger            = Logger.getLogger(VK.class);
-
     private static final String appId             = "3164748";
-    private static String       auth              = "oauth.vk.com";
 
+    private static String       auth              = "oauth.vk.com";
     private String              accessToken       = null;
     private String              secret            = null;
     private String              selfUid           = null;
+
     private boolean             HTTPS             = false;
 
     private FriendsGetFactory   friendsGetFactory = null;
 
-    private ExecutorService     pool              = Executors
-                                                          .newFixedThreadPool(2);
     static {
 
     }
@@ -159,10 +178,9 @@ public class VK {
 
         List<VKFriend> result = new ArrayList<VKFriend>();
         if (!Strings.isNullOrEmpty(accessToken)) {
-            FriendsGet request = getFriendRequestFactory()
-                    .createRequestWithFields("uid", "first_name", "last_name",
-                            "sex");
-            result = request.addUid(uid).execute().getFriends();
+            result = getFriendRequestFactory().createRequest()
+                    .addField("uid", "first_name", "last_name", "sex")
+                    .addUid(uid).execute().getFriends();
         }
 
         return result;
@@ -170,20 +188,28 @@ public class VK {
 
     public Map<String, List<VKFriend>> getFrinedsOfFriends(
             List<VKFriend> friends) {
+        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime
+                .getRuntime().availableProcessors());
+        CompletionService<List<VKFriend>> pool = new ExecutorCompletionService<>(
+                threadPool);
 
-        ConcurrentMap<String, List<VKFriend>> friendMap = new ConcurrentHashMap<String, List<VKFriend>>();
-        List<Future<Runnable>> result = new ArrayList<Future<Runnable>>();
+        Map<String, List<VKFriend>> friendMap = new HashMap<String, List<VKFriend>>();
 
         for (VKFriend friend : friends) {
-            pool.submit(new RunnableFrinedsGet(friend.getUid(), friendMap));
-            // result = getFriendsList(friend.getUid());
-            // sleepIfNeeded(delta);
+            pool.submit(new RunnableFrinedsGet(friend.getUid()));
         }
-        try {
-            pool.awaitTermination(5, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-            logger.error("awaiting terminated ", e);
+
+        for (VKFriend friend : friends) {
+            try {
+                List<VKFriend> result = pool.take().get();
+                if (result != null) {
+                    friendMap.put(friend.getUid(), result);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                logger.fatal("bad things with pool", e);
+            }
         }
+        threadPool.shutdown();
         return friendMap;
     }
 
@@ -216,6 +242,7 @@ public class VK {
 
     }
 
+    @SuppressWarnings("unused")
     private void sleepIfNeeded(long delta) {
         if (delta * 1E-6 < MIN_PAUSE) {
             Double sleepTime = 340 - delta * 1E-6;
@@ -224,33 +251,6 @@ public class VK {
                 Thread.sleep(sleepTime.longValue());
             } catch (InterruptedException e) {
             }
-        }
-    }
-
-    private class RunnableFrinedsGet implements Runnable {
-
-        private String                        uid;
-
-        ConcurrentMap<String, List<VKFriend>> map = null;
-
-        public RunnableFrinedsGet(String uid,
-                ConcurrentMap<String, List<VKFriend>> map) {
-            this.map = map;
-            this.uid = uid;
-        }
-
-        @Override
-        public void run() {
-            long start, end;
-            start = System.nanoTime();
-            List<VKFriend> result = getFriendsList(uid);
-            end = System.nanoTime();
-            logger.debug("getting friend list took " + (end - start) * 1E-6
-                    + " ms");
-            if (result != null) {
-                map.put(uid, result);
-            }
-            return;
         }
     }
 

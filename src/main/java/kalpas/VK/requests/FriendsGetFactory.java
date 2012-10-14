@@ -5,8 +5,6 @@ import java.util.Map;
 
 import kalpas.VK.requests.base.VKRequestFactory;
 
-import com.google.common.base.Joiner;
-
 public class FriendsGetFactory implements VKRequestFactory {
 
     private String accessToken = null;
@@ -32,25 +30,4 @@ public class FriendsGetFactory implements VKRequestFactory {
         return secret == null ? new FriendsGet(this.accessToken)
                 : new FriendsGet(this.accessToken, false, secret);
     }
-
-    /**
-     * 
-     * @param fields
-     *            {@link FriendsGet#addField(String...)}
-     * @return
-     */
-    public FriendsGet createRequestWithFields(String... fields) {
-        FriendsGet request = null;
-        String key = Joiner.on("").join(fields);
-        // if (cache.containsKey(key)) {
-        // request = cache.get(key);
-        // } else {
-            request = secret == null ? new FriendsGet(this.accessToken)
-                    : new FriendsGet(this.accessToken, false, secret);
-        request.addField(fields);
-        // cache.put(key, request);
-        // }
-        return request;
-    }
-
 }
