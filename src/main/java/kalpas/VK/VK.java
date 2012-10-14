@@ -1,12 +1,19 @@
 package kalpas.VK;
 
-import java.util.Collections;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import kalpas.VK.requests.FriendsGet;
 import kalpas.VK.requests.FriendsGetFactory;
 import kalpas.VK.requests.base.BaseVKRequest;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
@@ -21,21 +28,32 @@ import org.eclipse.swt.widgets.Shell;
 import com.google.common.base.Strings;
 
 public class VK {
-    Logger logger = Logger.getLogger(VK.class);
+    private static final int    MIN_PAUSE         = 340;
 
-    private static final String appId = "3164748";
-    private static String auth = "https://oauth.vk.com/authorize";
-    
-    private String accessToken = null;
-    private String uid = null;
+    Logger                      logger            = Logger.getLogger(VK.class);
 
-    private FriendsGetFactory friendsGetFactory = null;
+    private static final String appId             = "3164748";
+    private static String       auth              = "oauth.vk.com";
 
-    public String getAccessToken() {
-        return accessToken;
+    private String              accessToken       = null;
+    private String              secret            = null;
+    private String              selfUid           = null;
+    private boolean             HTTPS             = false;
+
+    private FriendsGetFactory   friendsGetFactory = null;
+
+    private ExecutorService     pool              = Executors
+                                                          .newFixedThreadPool(2);
+    static {
+
     }
 
     public void auth() {
+        this.auth(true);
+    }
+
+    public void auth(boolean https) {
+        HTTPS = https;
         final Display display = new Display();
         Shell shell = new Shell(display);
         GridLayout gridLayout = new GridLayout();
@@ -59,6 +77,7 @@ public class VK {
         browser.setLayoutData(data);
 
         browser.addLocationListener(new LocationListener() {
+            @Override
             public void changed(LocationEvent event) {
                 if (event.top) {
                     if (event.location
@@ -67,37 +86,111 @@ public class VK {
                         String[] response = event.location.split("#")[1]
                                 .split("&");
                         accessToken = response[0].split("=")[1];
-                        uid = response[2].split("=")[1];
+                        selfUid = response[2].split("=")[1];
+                        if (!HTTPS) {
+                            secret = response[3].split("=")[1];
+                        }
                         logger.info("access_token = " + accessToken
-                                + ", uid = " + uid);
+                                + ", uid = " + selfUid);
                         display.dispose();
                     }
                 }
             }
 
+            @Override
             public void changing(LocationEvent event) {
             }
         });
 
         shell.open();
 
-        StringBuilder uriBuilder = new StringBuilder();
-        uriBuilder.append(auth);
-        uriBuilder.append("?");
-        uriBuilder.append("client_id=" + appId + "&");
-        uriBuilder.append("scope=friends,notify,wall&");
-        uriBuilder.append("redirect_uri=http://oauth.vk.com/blank.html&");
-        uriBuilder.append("display=page&");
-        uriBuilder.append("response_type=token");
+        String string = buildAuthURI(https);
 
-        browser.setUrl(uriBuilder.toString());
-        while (!shell.isDisposed())
-            if (!display.readAndDispatch())
+        browser.setUrl(string);
+        while (!shell.isDisposed()) {
+            if (!display.readAndDispatch()) {
                 display.sleep();
+            }
+        }
         display.dispose();
 
     }
-    
+
+    private String buildAuthURI(boolean https) {
+
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("https")
+                .setHost(auth)
+                .setPath("/authorize")
+                .setParameter("client_id", appId)
+                .setParameter("scope",
+                        "friends,notify,wall" + (!https ? ",nohttps" : ""))
+                .setParameter("redirect_uri", "http://oauth.vk.com/blank.html")
+                .addParameter("display", "popup")
+                .addParameter("response_type", "token");
+        String result = null;
+        try {
+            result = builder.build().toString();
+        } catch (URISyntaxException e) {
+            logger.fatal("invalid URL", e);
+        }
+        return result;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    private FriendsGetFactory getFriendRequestFactory() {
+        if (friendsGetFactory == null) {
+            friendsGetFactory = HTTPS ? new FriendsGetFactory(accessToken)
+                    : new FriendsGetFactory(accessToken, secret);
+        }
+        return friendsGetFactory;
+    }
+
+    public List<VKFriend> getFriendsList() {
+        return getFriendsList(selfUid);
+    }
+
+    public List<VKFriend> getFriendsList(String uid) {
+
+        List<VKFriend> result = new ArrayList<VKFriend>();
+        if (!Strings.isNullOrEmpty(accessToken)) {
+            FriendsGet request = getFriendRequestFactory()
+                    .createRequestWithFields("uid", "first_name", "last_name",
+                            "sex");
+            result = request.addUid(uid).execute().getFriends();
+        }
+
+        return result;
+    }
+
+    public Map<String, List<VKFriend>> getFrinedsOfFriends(
+            List<VKFriend> friends) {
+
+        long start, end, delta, total = 0L, cnt = 0L;
+        Map<String, List<VKFriend>> friendMap = new HashMap<String, List<VKFriend>>();
+        List<VKFriend> result = null;
+
+        for (VKFriend friend : friends) {
+            start = System.nanoTime();
+            result = getFriendsList(friend.getUid());
+            end = System.nanoTime();
+            delta = end - start;
+            logger.debug("getting friend list took " + delta * 1E-6 + " ms");
+            total += delta;
+            cnt++;
+            if (result != null) {
+                friendMap.put(friend.getUid(), result);
+            }
+            // sleepIfNeeded(delta);
+        }
+        logger.debug("average time for getting friends " + total / cnt * 1E-6
+                + " ms");
+        return friendMap;
+    }
+
     public void request(String body) {
 
         String[] parts = body.split(" ");
@@ -106,40 +199,62 @@ public class VK {
 
         BaseVKRequest request = new BaseVKRequest() {
 
-            public String getName() {
-                return name_;
+            @Override
+            protected String getAccessToken() {
+                return accessToken;
             }
 
+            @Override
             public String getBody() {
                 return body_;
             }
 
             @Override
-            protected String getAccessToken() {
-                return accessToken;
+            public String getName() {
+                return name_;
             }
+
         };
 
         request.send();
 
     }
 
-    public List<String> getFriendsList(String uid) {
-
-        List<String> result = Collections.<String> emptyList();
-        if (!Strings.isNullOrEmpty(accessToken)) {
-            if (friendsGetFactory == null) {
-                friendsGetFactory = new FriendsGetFactory(accessToken);
+    private void sleepIfNeeded(long delta) {
+        if (delta * 1E-6 < MIN_PAUSE) {
+            Double sleepTime = 340 - delta * 1E-6;
+            logger.debug("FAST RESPONSE. SLEEP NEEDED - " + sleepTime);
+            try {
+                Thread.sleep(sleepTime.longValue());
+            } catch (InterruptedException e) {
             }
-            FriendsGet request = friendsGetFactory.createRequest();
-            request.addUid(uid).send();
         }
-
-        return result;
     }
 
-    public List<String> getFriendsList() {
-        return getFriendsList(this.uid);
+    private class RunnableFrinedsGet implements Runnable {
+
+        private String                        uid;
+
+        ConcurrentMap<String, List<VKFriend>> map = null;
+
+        public RunnableFrinedsGet(String uid,
+                ConcurrentMap<String, List<VKFriend>> map) {
+            this.map = map;
+            this.uid = uid;
+        }
+
+        @Override
+        public void run() {
+            long start, end, delta;
+            start = System.nanoTime();
+            List<VKFriend> result = getFriendsList(uid);
+            end = System.nanoTime();
+            logger.debug("getting friend list took " + (end - start) * 1E-6
+                    + " ms");
+            if (result != null) {
+                map.put(uid, result);
+            }
+        }
     }
 
 }
