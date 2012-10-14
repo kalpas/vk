@@ -2,12 +2,14 @@ package kalpas.VK;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import kalpas.VK.requests.FriendsGet;
 import kalpas.VK.requests.FriendsGetFactory;
@@ -169,25 +171,19 @@ public class VK {
     public Map<String, List<VKFriend>> getFrinedsOfFriends(
             List<VKFriend> friends) {
 
-        long start, end, delta, total = 0L, cnt = 0L;
-        Map<String, List<VKFriend>> friendMap = new HashMap<String, List<VKFriend>>();
-        List<VKFriend> result = null;
+        ConcurrentMap<String, List<VKFriend>> friendMap = new ConcurrentHashMap<String, List<VKFriend>>();
+        List<Future<Runnable>> result = new ArrayList<Future<Runnable>>();
 
         for (VKFriend friend : friends) {
-            start = System.nanoTime();
-            result = getFriendsList(friend.getUid());
-            end = System.nanoTime();
-            delta = end - start;
-            logger.debug("getting friend list took " + delta * 1E-6 + " ms");
-            total += delta;
-            cnt++;
-            if (result != null) {
-                friendMap.put(friend.getUid(), result);
-            }
+            pool.submit(new RunnableFrinedsGet(friend.getUid(), friendMap));
+            // result = getFriendsList(friend.getUid());
             // sleepIfNeeded(delta);
         }
-        logger.debug("average time for getting friends " + total / cnt * 1E-6
-                + " ms");
+        try {
+            pool.awaitTermination(5, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            logger.error("awaiting terminated ", e);
+        }
         return friendMap;
     }
 
@@ -245,7 +241,7 @@ public class VK {
 
         @Override
         public void run() {
-            long start, end, delta;
+            long start, end;
             start = System.nanoTime();
             List<VKFriend> result = getFriendsList(uid);
             end = System.nanoTime();
@@ -254,6 +250,7 @@ public class VK {
             if (result != null) {
                 map.put(uid, result);
             }
+            return;
         }
     }
 

@@ -76,12 +76,16 @@ public class FriendsGet extends BaseVKRequest {
             int length = friendsArray.length();
             for (int i = 0; i < length; i++) {
                 friend = friendsArray.optJSONObject(i);
+                try {
                 vkFriend = new VKFriend()
                         .setUid(String.valueOf(friend.optInt("uid")))
                         .setFirstName(friend.optString("first_name"))
                         .setLastName(friend.optString("last_name"))
                         .setSex(friend.optInt("sex"));
                 friends.add(vkFriend);
+                } catch (NullPointerException e) {
+                    logger.fatal("NPE " + friendsArray.toString(), e);
+                }
             }
         } else {
             logger.error("error occured " + getErrorCode() + " : "
