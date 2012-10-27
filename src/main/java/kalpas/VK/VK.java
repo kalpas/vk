@@ -32,7 +32,7 @@ import com.google.common.base.Strings;
 public class VK {
     private class RunnableFrinedsGet implements Callable<List<VKFriend>> {
 
-        private String                        uid;
+        private String uid;
 
         public RunnableFrinedsGet(String uid) {
             this.uid = uid;

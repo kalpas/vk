@@ -2,6 +2,8 @@ package kalpas.VK;
 
 import org.joda.time.DateTime;
 
+import com.google.common.base.Joiner;
+
 public class VKFriend {
     
     private String uid;
@@ -173,5 +175,10 @@ public class VKFriend {
     public VKFriend setEducation(String education) {
         this.education = education;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return Joiner.on(" ").skipNulls().join(uid, firstName, lastName);
     }
 }

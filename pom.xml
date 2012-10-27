@@ -50,5 +50,20 @@
     	<artifactId>commons-codec</artifactId>
     	<version>20041127.091804</version>
     </dependency>
+    <dependency>
+    	<groupId>org.apache.httpcomponents</groupId>
+    	<artifactId>httpasyncclient</artifactId>
+    	<version>4.0-beta3</version>
+    </dependency>
+    <dependency>
+    	<groupId>commons-lang</groupId>
+    	<artifactId>commons-lang</artifactId>
+    	<version>20030203.000129</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.google.inject</groupId>
+    	<artifactId>guice</artifactId>
+    	<version>3.0</version>
+    </dependency>
   </dependencies>
 </project>

@@ -41,7 +41,12 @@ public class Controller {
         // e.printStackTrace();
         // }
         Long startGetFriends = System.nanoTime();
-        List<VKFriend> friends = VK.getFriendsList("1080446");
+        List<VKFriend> friends = VK.getFriendsList("17702327");
+        // List<VKFriend> friends = VK.getFriendsList("53822984");
+        // friends.addAll(VK.getFriendsList("14218071"));
+        // friends.addAll(VK.getFriendsList("1080446"));
+        // friends.addAll(VK.getFriendsList("19306295"));
+        // friends.addAll(VK.getFriendsList("17702327"));
         Long endGetFriends = System.nanoTime();
         logger.debug("total time for my friends "
                 + (endGetFriends - startGetFriends) * 1.0E-9);

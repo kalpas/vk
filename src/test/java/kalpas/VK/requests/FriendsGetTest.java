@@ -21,6 +21,7 @@ public class FriendsGetTest {
 
     @Test
     public void test() {
+        request.addUid("uid");
         request.send();
     }
     
