@@ -6,7 +6,7 @@ import java.util.concurrent.Future;
 import kalpas.VK.HttpClientContainer;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.util.Validate;
+import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;

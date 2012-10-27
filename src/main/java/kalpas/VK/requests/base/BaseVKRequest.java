@@ -27,6 +27,8 @@ public abstract class BaseVKRequest implements VKRequest {
     protected Integer    errorCode = 0;
     protected String     errorMsg  = null;
 
+    HttpClientContainer  container;
+
     private final String api       = "api.vk.com";
 
     @Override
@@ -75,7 +77,7 @@ public abstract class BaseVKRequest implements VKRequest {
     }
 
     protected HttpClient getHttpClient() {
-        return HttpClientContainer.getInstance();
+        return container.getInstance();
     }
 
     protected Logger getLogger() {

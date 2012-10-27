@@ -3,7 +3,7 @@ package kalpas.simple;
 import java.io.IOException;
 import java.util.concurrent.Future;
 
-import org.apache.commons.lang.util.Validate;
+import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;

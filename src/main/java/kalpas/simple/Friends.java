@@ -45,31 +45,38 @@ public class Friends {
     public Map<String, List<VKFriend>> get(List<VKFriend> friends) {
 
         Map<String, List<VKFriend>> friendsMap = new HashMap<String, List<VKFriend>>();
-        Map<String, VKAsyncResult> results = new HashMap<String, VKClient.VKAsyncResult>(
-                friends.size());
+        Map<String, VKAsyncResult> futures = new HashMap<String, VKClient.VKAsyncResult>();
         for (VKFriend friend : friends) {
-            results.put(friend.getUid(),
+            futures.put(friend.getUid(),
                     client.sendAsync("friends.get?uid=" + friend.getUid()));
         }
-
         logger.debug("finished with sending requsests");
 
-        List<VKFriend> friendsList;
+        process(friendsMap, futures);
+        return friendsMap;
+    }
+
+    private void process(Map<String, List<VKFriend>> friendsMap,
+            Map<String, VKAsyncResult> results) {
+
+        List<VKFriend> friendsList = null;
         VKFriend vkFriend = null;
         JSONArray friendsArray = null;
+        Iterator<Map.Entry<String, VKClient.VKAsyncResult>> iterator = null;
+        Map.Entry<String, VKClient.VKAsyncResult> entry = null;
+
         do {
-            Iterator<Map.Entry<String, VKClient.VKAsyncResult>> iterator = results
-                    .entrySet().iterator();
-            Map.Entry<String, VKClient.VKAsyncResult> entry = null;
+            iterator = results.entrySet().iterator();
+            entry = null;
             while (iterator.hasNext()) {
-                friendsList = new ArrayList<VKFriend>();
                 entry = iterator.next();
                 if (entry.getValue().isDone()) {
+                    iterator.remove();
                     friendsArray = entry.getValue().get()
                             .optJSONArray("response");
-                    iterator.remove();
                     if (friendsArray != null) {
                         logger.debug("got result " + entry.getKey());
+                        friendsList = new ArrayList<VKFriend>();
                         for (int i = 0; i < friendsArray.length(); i++) {
                             vkFriend = new VKFriend().setUid(friendsArray
                                     .optString(i));
@@ -80,6 +87,6 @@ public class Friends {
                 }
             }
         } while (!results.isEmpty());
-        return friendsMap;
     }
+
 }
