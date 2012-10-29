@@ -9,7 +9,7 @@ public interface VKRequest {
     public VKRequest execute();
 
     public String getName();
-    
+
     public Integer getErrorCode();
 
     public String getErrorMsg();

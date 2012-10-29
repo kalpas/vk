@@ -7,9 +7,9 @@ import kalpas.VK.requests.base.VKRequestFactory;
 
 public class FriendsGetFactory implements VKRequestFactory {
 
-    private String accessToken = null;
-    private String secret      = null;
-    
+    private String                  accessToken = null;
+    private String                  secret      = null;
+
     private Map<String, FriendsGet> cache       = new HashMap<String, FriendsGet>();
 
     @SuppressWarnings("unused")
@@ -27,7 +27,6 @@ public class FriendsGetFactory implements VKRequestFactory {
     }
 
     public FriendsGet createRequest() {
-        return secret == null ? new FriendsGet(this.accessToken)
-                : new FriendsGet(this.accessToken, false, secret);
+        return secret == null ? new FriendsGet(this.accessToken) : new FriendsGet(this.accessToken, false, secret);
     }
 }

@@ -5,16 +5,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class FriendsGetTest {
-    
+
     FriendsGetFactory factory;
-    FriendsGet request;
+    FriendsGet        request;
     static {
         BasicConfigurator.configure();
     }
 
     @Before
-    public void before()
-    {
+    public void before() {
         factory = new FriendsGetFactory("someToken");
         request = factory.createRequest();
     }
@@ -24,7 +23,5 @@ public class FriendsGetTest {
         request.addUid("uid");
         request.send();
     }
-    
-
 
 }

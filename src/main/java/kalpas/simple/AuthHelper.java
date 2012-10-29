@@ -48,8 +48,7 @@ public class AuthHelper {
         try {
             browser = new Browser(shell, SWT.NONE);
         } catch (SWTError e) {
-            System.out.println("Could not instantiate Browser: "
-                    + e.getMessage());
+            System.out.println("Could not instantiate Browser: " + e.getMessage());
             display.dispose();
             return;
         }
@@ -64,18 +63,15 @@ public class AuthHelper {
             @Override
             public void changed(LocationEvent event) {
                 if (event.top) {
-                    if (event.location
-                            .contains("https://oauth.vk.com/blank.html")) {
+                    if (event.location.contains("https://oauth.vk.com/blank.html")) {
                         logger.info("response: " + event.location);
-                        String[] response = event.location.split("#")[1]
-                                .split("&");
+                        String[] response = event.location.split("#")[1].split("&");
                         accessToken = response[0].split("=")[1];
                         selfUid = response[2].split("=")[1];
                         if (!isHttps) {
                             secret = response[3].split("=")[1];
                         }
-                        logger.info("access_token = " + accessToken
-                                + ", uid = " + selfUid);
+                        logger.info("access_token = " + accessToken + ", uid = " + selfUid);
                         display.dispose();
                     }
                 }
@@ -103,14 +99,9 @@ public class AuthHelper {
     private String buildAuthURI(boolean https) {
 
         URIBuilder builder = new URIBuilder();
-        builder.setScheme("https")
-                .setHost(auth)
-                .setPath("/authorize")
-                .setParameter("client_id", appId)
-                .setParameter("scope",
-                        "friends,notify,wall" + (!https ? ",nohttps" : ""))
-                .setParameter("redirect_uri", "http://oauth.vk.com/blank.html")
-                .addParameter("display", "popup")
+        builder.setScheme("https").setHost(auth).setPath("/authorize").setParameter("client_id", appId)
+                .setParameter("scope", "friends,notify,wall" + (!https ? ",nohttps" : ""))
+                .setParameter("redirect_uri", "http://oauth.vk.com/blank.html").addParameter("display", "popup")
                 .addParameter("response_type", "token");
         String result = null;
         try {
@@ -126,8 +117,7 @@ public class AuthHelper {
             logger.fatal("getAccessToken waiting " + Thread.currentThread());
             synchronized (AuthHelper.class) {
                 if (accessToken == null) {
-                    logger.fatal("getAccessToken entered "
-                            + Thread.currentThread());
+                    logger.fatal("getAccessToken entered " + Thread.currentThread());
                     this.auth();
                 }
             }

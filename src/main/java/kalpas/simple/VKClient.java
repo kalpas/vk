@@ -91,8 +91,7 @@ public abstract class VKClient {
         }
 
         @Override
-        public JSONObject get(long timeout, TimeUnit unit)
-                throws InterruptedException, ExecutionException,
+        public JSONObject get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
                 TimeoutException {
             JSONObject result = null;
             try {

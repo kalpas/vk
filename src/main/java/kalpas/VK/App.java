@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import kalpas.VKModule;
-import kalpas.simple.Friends;
+import kalpas.simple.FriendsGraph;
+import kalpas.simple.GMLHelper;
+import kalpas.simple.api.Friends;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -33,9 +35,16 @@ public class App {
             container = injector.getInstance(HttpClientContainer.class);
             Logger.getLogger("org.apache").setLevel(Level.FATAL);
             friends = injector.getInstance(Friends.class);
-            List<VKFriend> myFriends = friends.get("1080446");
-            Map<String, List<VKFriend>> allFriends = friends.get(myFriends);
-            allFriends.put("1080446", myFriends);
+            // friends = friends.addFields("uid", "first_name", "last_name",
+            // "sex", "bdate");
+            List<VKUser> myFriends = friends.get("1080446");
+            Map<VKUser, List<VKUser>> allFriends = friends.get(myFriends);
+            // allFriends.put(new VKFriend().setUid("1080446"), myFriends);
+            GMLHelper gmlWriter = new GMLHelper();
+            FriendsGraph graph = new FriendsGraph();
+            // graph.add(new VKFriend().setUid("1080446"), myFriends);
+            graph.addInterconnections(allFriends);
+            gmlWriter.writeToFile("test", graph);
             logger.debug("wohoo");
 
         } catch (Exception e) {

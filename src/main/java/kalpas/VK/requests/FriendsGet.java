@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import kalpas.VK.App;
-import kalpas.VK.VKFriend;
+import kalpas.VK.VKUser;
 import kalpas.VK.requests.base.BaseVKRequest;
 
 import org.apache.log4j.Logger;
@@ -23,17 +23,11 @@ public class FriendsGet extends BaseVKRequest {
     private String       secret          = null;
     private boolean      https           = true;
 
-    private List<String> allowedFields   = Arrays.asList("uid", "first_name",
-                                                 "last_name", "nickname",
-                                                 "sex", "bdate", "city",
-                                                 "country", "timezone",
-                                                 "photo", "photo_medium",
-                                                 "photo_big", "domain",
-                                                 "has_mobile", "rate",
-                                                 "contacts", "education");
+    private List<String> allowedFields   = Arrays.asList("uid", "first_name", "last_name", "nickname", "sex", "bdate",
+                                                 "city", "country", "timezone", "photo", "photo_medium", "photo_big",
+                                                 "domain", "has_mobile", "rate", "contacts", "education");
 
-    private List<String> allowedCases    = Arrays.asList("nom", "gen", "dat",
-                                                 "acc", "ins", "abl");
+    private List<String> allowedCases    = Arrays.asList("nom", "gen", "dat", "acc", "ins", "abl");
 
     private List<String> allowedOrdering = Arrays.asList("name", "hints");
 
@@ -63,35 +57,32 @@ public class FriendsGet extends BaseVKRequest {
 
     // ------------------ METHODS ---------------------------------
 
-    public List<VKFriend> getFriends() {
+    public List<VKUser> getFriends() {
         if (this.response == null) {
             throw new UnsupportedOperationException();
         }
-        List<VKFriend> friends = new ArrayList<VKFriend>();
+        List<VKUser> friends = new ArrayList<VKUser>();
         if (getErrorCode() == 0) {
             JSONArray friendsArray = response.optJSONArray("response");
             JSONObject friend = null;
-            VKFriend vkFriend = null;
+            VKUser vkFriend = null;
 
             int length = friendsArray.length();
             for (int i = 0; i < length; i++) {
                 friend = friendsArray.optJSONObject(i);
                 try {
-                vkFriend = new VKFriend()
-                        .setUid(String.valueOf(friend.optInt("uid")))
-                        .setFirstName(friend.optString("first_name"))
-                        .setLastName(friend.optString("last_name"))
-                        .setSex(friend.optInt("sex"));
-                friends.add(vkFriend);
+                    vkFriend = new VKUser().setUid(String.valueOf(friend.optInt("uid")))
+                            .setFirstName(friend.optString("first_name")).setLastName(friend.optString("last_name"))
+                            .setSex(friend.optInt("sex"));
+                    friends.add(vkFriend);
                 } catch (NullPointerException e) {
                     logger.fatal("NPE " + friendsArray.toString(), e);
                 }
             }
         } else {
-            logger.error("error occured " + getErrorCode() + " : "
-                    + getErrorMsg4Log());
+            logger.error("error occured " + getErrorCode() + " : " + getErrorMsg4Log());
         }
-        return friends.size()==0?null:friends;
+        return friends.size() == 0 ? null : friends;
 
     }
 
@@ -110,11 +101,8 @@ public class FriendsGet extends BaseVKRequest {
 
     @Override
     public String getBody() {
-        return Joiner
-                .on("&")
-                .skipNulls()
-                .join(getUid(), getFileds(), getNameCase(), getCount(),
-                        getOffset(), getLid(), getOrder());
+        return Joiner.on("&").skipNulls()
+                .join(getUid(), getFileds(), getNameCase(), getCount(), getOffset(), getLid(), getOrder());
     }
 
     @Override
@@ -173,8 +161,7 @@ public class FriendsGet extends BaseVKRequest {
         if (allowedCases.contains(nameCase)) {
             this.nameCase = nameCase;
         } else
-            throw new IllegalArgumentException(nameCase
-                    + " nameCase is illegal");
+            throw new IllegalArgumentException(nameCase + " nameCase is illegal");
         return this;
     }
 
@@ -208,8 +195,7 @@ public class FriendsGet extends BaseVKRequest {
     }
 
     String getFileds() {
-        return !selectedFields.isEmpty() ? "fields="
-                + Joiner.on(",").skipNulls().join(selectedFields) : null;
+        return !selectedFields.isEmpty() ? "fields=" + Joiner.on(",").skipNulls().join(selectedFields) : null;
     }
 
     private String getUid() {

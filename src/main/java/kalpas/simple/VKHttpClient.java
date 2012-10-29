@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 
 public class VKHttpClient extends VKClient {
 
-    private Logger          logger      = Logger.getLogger(VKHttpsClient.class);
+    private Logger          logger = Logger.getLogger(VKHttpsClient.class);
 
     private final String    api    = "api.vk.com";
     private final String    accessToken;
@@ -31,8 +31,7 @@ public class VKHttpClient extends VKClient {
         secret = null;
     }
 
-    public VKHttpClient(String accessToken, String secret,
-            HttpClientContainer container) {
+    public VKHttpClient(String accessToken, String secret, HttpClientContainer container) {
         this.accessToken = accessToken;
         this.secret = secret;
         client = container.getInstance();
@@ -73,8 +72,7 @@ public class VKHttpClient extends VKClient {
     }
 
     private String buildRequest(String request) {
-        request = "/method/" + request + "&access_token="
-                + this.accessToken;
+        request = "/method/" + request + "&access_token=" + this.accessToken;
         request = request + "&sig=" + DigestUtils.md5Hex(request + secret);
 
         request = "http://" + api + request;

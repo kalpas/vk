@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import com.google.common.base.Strings;
 
 public class VK {
-    private class RunnableFrinedsGet implements Callable<List<VKFriend>> {
+    private class RunnableFrinedsGet implements Callable<List<VKUser>> {
 
         private String uid;
 
@@ -39,13 +39,12 @@ public class VK {
         }
 
         @Override
-        public List<VKFriend> call() {
+        public List<VKUser> call() {
             long start, end;
             start = System.nanoTime();
-            List<VKFriend> result = getFriendsList(uid);
+            List<VKUser> result = getFriendsList(uid);
             end = System.nanoTime();
-            logger.debug("getting friend list took " + (end - start) * 1E-6
-                    + " ms");
+            logger.debug("getting friend list took " + (end - start) * 1E-6 + " ms");
 
             return result;
         }
@@ -85,8 +84,7 @@ public class VK {
         try {
             browser = new Browser(shell, SWT.NONE);
         } catch (SWTError e) {
-            System.out.println("Could not instantiate Browser: "
-                    + e.getMessage());
+            System.out.println("Could not instantiate Browser: " + e.getMessage());
             display.dispose();
             return;
         }
@@ -101,18 +99,15 @@ public class VK {
             @Override
             public void changed(LocationEvent event) {
                 if (event.top) {
-                    if (event.location
-                            .contains("https://oauth.vk.com/blank.html")) {
+                    if (event.location.contains("https://oauth.vk.com/blank.html")) {
                         logger.info("response: " + event.location);
-                        String[] response = event.location.split("#")[1]
-                                .split("&");
+                        String[] response = event.location.split("#")[1].split("&");
                         accessToken = response[0].split("=")[1];
                         selfUid = response[2].split("=")[1];
                         if (!HTTPS) {
                             secret = response[3].split("=")[1];
                         }
-                        logger.info("access_token = " + accessToken
-                                + ", uid = " + selfUid);
+                        logger.info("access_token = " + accessToken + ", uid = " + selfUid);
                         display.dispose();
                     }
                 }
@@ -140,14 +135,9 @@ public class VK {
     private String buildAuthURI(boolean https) {
 
         URIBuilder builder = new URIBuilder();
-        builder.setScheme("https")
-                .setHost(auth)
-                .setPath("/authorize")
-                .setParameter("client_id", appId)
-                .setParameter("scope",
-                        "friends,notify,wall" + (!https ? ",nohttps" : ""))
-                .setParameter("redirect_uri", "http://oauth.vk.com/blank.html")
-                .addParameter("display", "popup")
+        builder.setScheme("https").setHost(auth).setPath("/authorize").setParameter("client_id", appId)
+                .setParameter("scope", "friends,notify,wall" + (!https ? ",nohttps" : ""))
+                .setParameter("redirect_uri", "http://oauth.vk.com/blank.html").addParameter("display", "popup")
                 .addParameter("response_type", "token");
         String result = null;
         try {
@@ -164,44 +154,39 @@ public class VK {
 
     private FriendsGetFactory getFriendRequestFactory() {
         if (friendsGetFactory == null) {
-            friendsGetFactory = HTTPS ? new FriendsGetFactory(accessToken)
-                    : new FriendsGetFactory(accessToken, secret);
+            friendsGetFactory = HTTPS ? new FriendsGetFactory(accessToken) : new FriendsGetFactory(accessToken, secret);
         }
         return friendsGetFactory;
     }
 
-    public List<VKFriend> getFriendsList() {
+    public List<VKUser> getFriendsList() {
         return getFriendsList(selfUid);
     }
 
-    public List<VKFriend> getFriendsList(String uid) {
+    public List<VKUser> getFriendsList(String uid) {
 
-        List<VKFriend> result = new ArrayList<VKFriend>();
+        List<VKUser> result = new ArrayList<VKUser>();
         if (!Strings.isNullOrEmpty(accessToken)) {
-            result = getFriendRequestFactory().createRequest()
-                    .addField("uid", "first_name", "last_name", "sex")
+            result = getFriendRequestFactory().createRequest().addField("uid", "first_name", "last_name", "sex")
                     .addUid(uid).execute().getFriends();
         }
 
         return result;
     }
 
-    public Map<String, List<VKFriend>> getFrinedsOfFriends(
-            List<VKFriend> friends) {
-        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime
-                .getRuntime().availableProcessors());
-        CompletionService<List<VKFriend>> pool = new ExecutorCompletionService<>(
-                threadPool);
+    public Map<String, List<VKUser>> getFrinedsOfFriends(List<VKUser> friends) {
+        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        CompletionService<List<VKUser>> pool = new ExecutorCompletionService<>(threadPool);
 
-        Map<String, List<VKFriend>> friendMap = new HashMap<String, List<VKFriend>>();
+        Map<String, List<VKUser>> friendMap = new HashMap<String, List<VKUser>>();
 
-        for (VKFriend friend : friends) {
+        for (VKUser friend : friends) {
             pool.submit(new RunnableFrinedsGet(friend.getUid()));
         }
 
-        for (VKFriend friend : friends) {
+        for (VKUser friend : friends) {
             try {
-                List<VKFriend> result = pool.take().get();
+                List<VKUser> result = pool.take().get();
                 if (result != null) {
                     friendMap.put(friend.getUid(), result);
                 }

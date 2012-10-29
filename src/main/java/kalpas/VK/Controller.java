@@ -41,51 +41,45 @@ public class Controller {
         // e.printStackTrace();
         // }
         Long startGetFriends = System.nanoTime();
-        List<VKFriend> friends = VK.getFriendsList("17702327");
+        List<VKUser> friends = VK.getFriendsList("17702327");
         // List<VKFriend> friends = VK.getFriendsList("53822984");
         // friends.addAll(VK.getFriendsList("14218071"));
         // friends.addAll(VK.getFriendsList("1080446"));
         // friends.addAll(VK.getFriendsList("19306295"));
         // friends.addAll(VK.getFriendsList("17702327"));
         Long endGetFriends = System.nanoTime();
-        logger.debug("total time for my friends "
-                + (endGetFriends - startGetFriends) * 1.0E-9);
+        logger.debug("total time for my friends " + (endGetFriends - startGetFriends) * 1.0E-9);
         startGetFriends = System.nanoTime();
-        Map<String, List<VKFriend>> friendMap = VK.getFrinedsOfFriends(friends);
+        Map<String, List<VKUser>> friendMap = VK.getFrinedsOfFriends(friends);
         endGetFriends = System.nanoTime();
-        logger.debug("total time for friends of friends "
-                + (endGetFriends - startGetFriends) * 1.0E-9);
+        logger.debug("total time for friends of friends " + (endGetFriends - startGetFriends) * 1.0E-9);
         List<Map.Entry<String, String>> edges = new ArrayList<>();
         List<String> uids = new ArrayList<String>();
-        for (VKFriend f : friends) {
+        for (VKUser f : friends) {
             uids.add(f.getUid());
         }
         for (String listKey : friendMap.keySet()) {
-            for (VKFriend friend : friendMap.get(listKey)) {
+            for (VKUser friend : friendMap.get(listKey)) {
                 for (String uid : uids) {
                     if (uid.equals(friend.getUid()))
-                        edges.add(new AbstractMap.SimpleEntry(listKey, friend
-                                .getUid()));
+                        edges.add(new AbstractMap.SimpleEntry(listKey, friend.getUid()));
                 }
             }
         }
 
-        BufferedWriter bw = new BufferedWriter(new FileWriter(
-new File(
-                new DateTime().getMillis() + ".gml"), true));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(new File(new DateTime().getMillis() + ".gml"), true));
         bw.write("graph [");
         bw.newLine();
         bw.write("\tdirected 0");
         bw.newLine();
         bw.write("\tid 1");
         bw.newLine();
-        for (VKFriend f : friends) {
+        for (VKUser f : friends) {
             bw.write("\tnode [");
             bw.newLine();
             bw.write("\t\tid " + f.getUid());
             bw.newLine();
-            bw.write("\t\tlabel \"" + f.getFirstName() + " " + f.getLastName()
-                    + "\"");
+            bw.write("\t\tlabel \"" + f.getFirstName() + " " + f.getLastName() + "\"");
             bw.newLine();
             bw.write("\t\tsex " + f.getSex());
             bw.newLine();

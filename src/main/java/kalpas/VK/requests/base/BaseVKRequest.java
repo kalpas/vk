@@ -95,19 +95,16 @@ public abstract class BaseVKRequest implements VKRequest {
     @Override
     public JSONObject send() {
         String sig = "";
-        String request = "/method/" + getName() + "?" + getBody()
-                + "&access_token=" + getAccessToken();
+        String request = "/method/" + getName() + "?" + getBody() + "&access_token=" + getAccessToken();
         if (!isHttps()) {
             sig = DigestUtils.md5Hex(request + getSecret());
         }
-        String fullRequest = (isHttps() ? "https" : "http") + "://" + api
-                + request + (!isHttps() ? "&sig=" + sig : "");
+        String fullRequest = (isHttps() ? "https" : "http") + "://" + api + request + (!isHttps() ? "&sig=" + sig : "");
         HttpGet get = new HttpGet(fullRequest);
         getLogger().debug(request + " would be executed");
         JSONObject response = null;
         try {
-            response = getHttpClient().execute(get,
-                    new VKResponseHandler<JSONObject>());
+            response = getHttpClient().execute(get, new VKResponseHandler<JSONObject>());
         } catch (ClientProtocolException e) {
             logger.error("ClientProtocolException", e);
             e.printStackTrace();
@@ -118,12 +115,10 @@ public abstract class BaseVKRequest implements VKRequest {
         return response;
     }
 
-    private class VKResponseHandler<T extends JSONObject> implements
-            ResponseHandler<JSONObject> {
+    private class VKResponseHandler<T extends JSONObject> implements ResponseHandler<JSONObject> {
 
         @Override
-        public JSONObject handleResponse(HttpResponse response)
-                throws ClientProtocolException, IOException {
+        public JSONObject handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
 
             JSONObject result = null;
             HttpEntity entity = response.getEntity();

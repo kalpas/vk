@@ -13,9 +13,9 @@ import org.apache.log4j.Logger;
 
 public class VKHttpsClient extends VKClient {
 
-    private Logger          logger      = Logger.getLogger(VKHttpsClient.class);
+    private Logger          logger = Logger.getLogger(VKHttpsClient.class);
 
-    private final String    api         = "api.vk.com";
+    private final String    api    = "api.vk.com";
     private final String    accessToken;
 
     private HttpClient      client;
@@ -34,8 +34,7 @@ public class VKHttpsClient extends VKClient {
     protected HttpResponse sendInternal(String request) {
         Validate.notNull(accessToken);
 
-        request = "https://" + api + request + "&access_token="
-                + this.accessToken;
+        request = "https://" + api + request + "&access_token=" + this.accessToken;
 
         HttpResponse response = null;
         HttpGet get = new HttpGet(request);
@@ -56,8 +55,7 @@ public class VKHttpsClient extends VKClient {
     protected Future<HttpResponse> sendAsyncInternal(String request) {
         Validate.notNull(accessToken);
 
-        request = "https://" + api + request + "&access_token="
-                + this.accessToken;
+        request = "https://" + api + request + "&access_token=" + this.accessToken;
 
         HttpGet get = new HttpGet(request);
         return asyncClient.execute(get, null);
