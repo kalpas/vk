@@ -28,11 +28,11 @@ public class Friends {
 
     static final MapJoiner        joiner          = Joiner.on("&").withKeyValueSeparator("=");
 
-    protected Logger              logger          = Logger.getLogger(Friends.class);
+    private Logger              logger          = Logger.getLogger(Friends.class);
 
-    protected VKClient            client;
+    private VKClient            client;
 
-    protected Map<String, String> params          = new HashMap<>();
+    private Map<String, String> params          = new HashMap<>();
 
     @Inject
     public Friends(VKClient vkClient) {

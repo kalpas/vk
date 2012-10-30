@@ -1,16 +1,10 @@
 package kalpas.VK;
 
-import java.util.List;
-import java.util.Map;
-
 import kalpas.VKModule;
-import kalpas.simple.FriendsGraph;
-import kalpas.simple.GMLHelper;
 import kalpas.simple.api.Friends;
-import kalpas.simple.api.Users;
+import kalpas.simple.api.Wall;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.inject.Guice;
@@ -34,15 +28,22 @@ public class App {
             BasicConfigurator.configure();
             injector = Guice.createInjector(new VKModule());
             container = injector.getInstance(HttpClientContainer.class);
-            Logger.getLogger("org.apache").setLevel(Level.FATAL);
-            friends = injector.getInstance(Friends.class).addFields("first_name", "last_name", "sex");
-            List<VKUser> myFriends = friends.get("1080446");
-            Users users = injector.getInstance(Users.class).addFields("first_name", "last_name", "sex");
-            Map<VKUser, List<VKUser>> allFriends = friends.get(myFriends);
-            GMLHelper gmlWriter = new GMLHelper();
-            FriendsGraph graph = new FriendsGraph();
-            graph.addInterconnections(allFriends);
-            gmlWriter.writeToFile("test", graph);
+            Wall wall = injector.getInstance(Wall.class);
+            wall.get("1080446");
+
+            // Logger.getLogger("org.apache").setLevel(Level.FATAL);
+            // friends =
+            // injector.getInstance(Friends.class).addFields("first_name",
+            // "last_name", "sex");
+            // List<VKUser> myFriends = friends.get("1080446");
+            // Users users =
+            // injector.getInstance(Users.class).addFields("first_name",
+            // "last_name", "sex");
+            // Map<VKUser, List<VKUser>> allFriends = friends.get(myFriends);
+            // GMLHelper gmlWriter = new GMLHelper();
+            // FriendsGraph graph = new FriendsGraph();
+            // graph.addInterconnections(allFriends);
+            // gmlWriter.writeToFile("test", graph);
 
             // Users users = injector.getInstance(Users.class);
             //

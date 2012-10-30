@@ -1,5 +1,8 @@
 package kalpas.VK;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +12,9 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
@@ -56,5 +62,13 @@ public class AppTest extends TestCase {
         };
 
         System.out.println(Joiner.on(",").skipNulls().join(Iterables.transform(Arrays.asList(a, b), getUid)));
+    }
+
+    public void test2() throws JsonParseException, JsonMappingException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        FileInputStream in = new FileInputStream(new File("1.txt"));
+        Map<String, Object> post = mapper.readValue(in, Map.class);
+        System.err.println(post);
+
     }
 }
