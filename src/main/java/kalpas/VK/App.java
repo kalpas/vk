@@ -7,6 +7,7 @@ import kalpas.VKModule;
 import kalpas.simple.FriendsGraph;
 import kalpas.simple.GMLHelper;
 import kalpas.simple.api.Friends;
+import kalpas.simple.api.Users;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -34,17 +35,29 @@ public class App {
             injector = Guice.createInjector(new VKModule());
             container = injector.getInstance(HttpClientContainer.class);
             Logger.getLogger("org.apache").setLevel(Level.FATAL);
-            friends = injector.getInstance(Friends.class);
-            // friends = friends.addFields("uid", "first_name", "last_name",
-            // "sex", "bdate");
+            friends = injector.getInstance(Friends.class).addFields("first_name", "last_name", "sex");
             List<VKUser> myFriends = friends.get("1080446");
+            Users users = injector.getInstance(Users.class).addFields("first_name", "last_name", "sex");
             Map<VKUser, List<VKUser>> allFriends = friends.get(myFriends);
-            // allFriends.put(new VKFriend().setUid("1080446"), myFriends);
             GMLHelper gmlWriter = new GMLHelper();
             FriendsGraph graph = new FriendsGraph();
-            // graph.add(new VKFriend().setUid("1080446"), myFriends);
             graph.addInterconnections(allFriends);
             gmlWriter.writeToFile("test", graph);
+
+            // Users users = injector.getInstance(Users.class);
+            //
+            // BufferedReader in = new BufferedReader(new
+            // InputStreamReader(System.in));
+            // String line = in.readLine();
+            // ;
+            // while (!"q".equals(line)) {
+            // try {
+            // users.addFields(line.split(",")).get("1080446");
+            // line = in.readLine();
+            // } catch (Exception e) {
+            // logger.error("errm", e);
+            // }
+            // }
             logger.debug("wohoo");
 
         } catch (Exception e) {

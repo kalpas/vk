@@ -1,5 +1,8 @@
 package kalpas.VK;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.joda.time.DateTime;
 
 import com.google.common.base.Joiner;
@@ -10,10 +13,63 @@ public class VKUser {
     private String   firstName;
     private String   lastName;
     private String   nickname;
+    // 2 - male, 1 - female
     private int      sex;
     private DateTime bdate;
     private String   city;
     private String   country;
+
+    private Map<String, String> values = new HashMap<String, String>();
+
+    // private String photo_50;
+    // private String photo_100;
+    // private String photo_200_orig;
+    // private String photo_200;
+    // private String photo_max;
+    // private String photo_max_orig;
+    // private String online;
+    // private String lists;
+    // private String screen_name;
+    // private String has_mobile;
+    // private String rate;
+    // private String education;
+    // private String universities;
+    // private String schools;
+    // private String can_post;
+    // private String can_see_all_posts;
+    // private String can_write_private_message;
+    // private String activity;
+    // private String last_seen;
+    //
+    // // 1 - не женат/не замужем
+    // // 2 - есть друг/есть подруга
+    // // 3 - помолвлен/помолвлена
+    // // 4 - женат/замужем
+    // // 5 - всё сложно
+    // // 6 - в активном поиске
+    // // 7 - влюблён/влюблена
+    // private int relation;
+    // private int albums;
+    // private int videos;
+    // private int audios;
+    // private int notes;
+    // private int friends;
+    // private int groups;
+    // private int online_friends;
+    // private int mutual_friends;
+    // private int user_videos;
+    // private int followers;
+    // private int user_photos;
+    // private int subscriptions;
+    // private String wall_comments;
+    // private String relatives;
+    // private String interests;
+    // private String movies;
+    // private String tv;
+    // private String books;
+    // private String games;
+    // private String about;
+    // private String connections;
 
     // private String timezone;
     // private String photo;
@@ -96,89 +152,6 @@ public class VKUser {
         this.country = country;
         return this;
     }
-
-    // FIXME review fields
-
-    // public String getTimezone() {
-    // return timezone;
-    // }
-    //
-    // public VKFriend setTimezone(String timezone) {
-    // this.timezone = timezone;
-    // return this;
-    // }
-    //
-    // public String getPhoto() {
-    // return photo;
-    // }
-    //
-    // public VKFriend setPhoto(String photo) {
-    // this.photo = photo;
-    // return this;
-    // }
-    //
-    // public String getPhotoMedium() {
-    // return photoMedium;
-    // }
-    //
-    // public VKFriend setPhotoMedium(String photo_medium) {
-    // this.photoMedium = photo_medium;
-    // return this;
-    // }
-    //
-    // public String getPhotoBig() {
-    // return photoBig;
-    // }
-    //
-    // public VKFriend setPhotoBig(String photo_big) {
-    // this.photoBig = photo_big;
-    // return this;
-    // }
-    //
-    // public String getDomain() {
-    // return domain;
-    // }
-    //
-    // public VKFriend setDomain(String domain) {
-    // this.domain = domain;
-    // return this;
-    // }
-    //
-    // public String getHasMobile() {
-    // return hasMobile;
-    // }
-    //
-    // public VKFriend setHasMobile(String has_mobile) {
-    // this.hasMobile = has_mobile;
-    // return this;
-    // }
-    //
-    // public String getRate() {
-    // return rate;
-    // }
-    //
-    // public VKFriend setRate(String rate) {
-    // this.rate = rate;
-    // return this;
-    // }
-    //
-    // public String getContacts() {
-    // return contacts;
-    // }
-    //
-    // public VKFriend setContacts(String contacts) {
-    // this.contacts = contacts;
-    // return this;
-    // }
-    //
-    // public String getEducation() {
-    // return education;
-    // }
-    //
-    // public VKFriend setEducation(String education) {
-    // this.education = education;
-    // return this;
-    // }
 
     @Override
     public String toString() {

@@ -11,24 +11,28 @@ import kalpas.VK.VKUser;
 import kalpas.simple.VKClient;
 import kalpas.simple.VKClient.VKAsyncResult;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.google.common.base.Strings;
+import com.google.common.base.Joiner;
+import com.google.common.base.Joiner.MapJoiner;
 import com.google.inject.Inject;
 
-public class Friends extends UsersBase {
+public class Friends {
 
-    private static final DateTimeFormatter formatterFull    = DateTimeFormat.forPattern("dd.MM.yyyy").withZoneUTC();
-    private static final DateTimeFormatter formatterPartial = DateTimeFormat.forPattern("dd.MM").withZoneUTC()
-                                                                    .withDefaultYear(1972);
+    private static final String   get             = "friends.get";
 
-    private static final String            requstName       = "friends.get";
+    private final List<String>    allowedOrdering = Arrays.asList("name", "hints");
+    private final List<String>    allowedCases    = Arrays.asList("nom", "gen", "dat", "acc", "ins", "abl");
 
-    private final List<String>             allowedOrdering  = Arrays.asList("name", "hints");
+    static final MapJoiner        joiner          = Joiner.on("&").withKeyValueSeparator("=");
+
+    protected Logger              logger          = Logger.getLogger(Friends.class);
+
+    protected VKClient            client;
+
+    protected Map<String, String> params          = new HashMap<>();
 
     @Inject
     public Friends(VKClient vkClient) {
@@ -39,17 +43,17 @@ public class Friends extends UsersBase {
 
         List<VKUser> friends = new ArrayList<VKUser>();
 
-        JSONObject result = client.send(requstName + "?" + buildRequest(uid));
+        JSONObject result = client.send(get + "?" + buildRequest(uid));
 
         VKUser vkFriend = null;
         JSONObject friend = null;
         JSONArray friendsArray = result.optJSONArray("response");
         for (int i = 0; i < friendsArray.length(); i++) {
-            if (selectedFields.isEmpty()) {
-                vkFriend = new VKUser().setUid(friendsArray.optString(i));
+            friend = friendsArray.optJSONObject(i);
+            if (friend != null) {
+                vkFriend = Converter.convertFromJSON(friend);
             } else {
-                friend = friendsArray.optJSONObject(i);
-                vkFriend = convertFromJSON(friend);
+                vkFriend = new VKUser().setUid(friendsArray.optString(i));
             }
             friends.add(vkFriend);
         }
@@ -62,7 +66,7 @@ public class Friends extends UsersBase {
         Map<VKUser, List<VKUser>> friendsMap = new HashMap<VKUser, List<VKUser>>();
         Map<VKUser, VKAsyncResult> futures = new HashMap<VKUser, VKClient.VKAsyncResult>();
         for (VKUser friend : friends) {
-            futures.put(friend, client.sendAsync(requstName + "?" + buildRequest(friend.getUid())));
+            futures.put(friend, client.sendAsync(get + "?" + buildRequest(friend.getUid())));
         }
         logger.debug("finished with sending requsests");
 
@@ -72,13 +76,10 @@ public class Friends extends UsersBase {
 
     private void process(Map<VKUser, List<VKUser>> friendsMap, Map<VKUser, VKAsyncResult> results) {
 
-        List<VKUser> friendsList = null;
-        VKUser vkFriend = null;
-        JSONArray friendsArray = null;
-        JSONObject friend = null;
-        Iterator<Map.Entry<VKUser, VKClient.VKAsyncResult>> iterator = null;
-        Map.Entry<VKUser, VKClient.VKAsyncResult> entry = null;
-
+        List<VKUser> friendsList;
+        JSONArray friendsArray;
+        Iterator<Map.Entry<VKUser, VKClient.VKAsyncResult>> iterator;
+        Map.Entry<VKUser, VKClient.VKAsyncResult> entry;
         do {
             iterator = results.entrySet().iterator();
             entry = null;
@@ -89,17 +90,7 @@ public class Friends extends UsersBase {
                     friendsArray = entry.getValue().get().optJSONArray("response");
                     if (friendsArray != null) {
                         logger.debug("got result " + entry.getKey());
-                        friendsList = new ArrayList<VKUser>();
-                        for (int i = 0; i < friendsArray.length(); i++) {
-                            if (selectedFields.isEmpty()) {
-                                vkFriend = new VKUser().setUid(friendsArray.optString(i));
-                            } else {
-                                friend = friendsArray.optJSONObject(i);
-                                vkFriend = convertFromJSON(friend);
-                            }
-
-                            friendsList.add(vkFriend);
-                        }
+                        friendsList = processArray(friendsArray);
                         friendsMap.put(entry.getKey(), friendsList);
                     }
                 }
@@ -107,90 +98,44 @@ public class Friends extends UsersBase {
         } while (!results.isEmpty());
     }
 
-    private VKUser convertFromJSON(JSONObject friend) {
-        VKUser vkFriend = new VKUser();
-        if (selectedFields.contains("uid")) {
-            vkFriend.setUid(friend.optString("uid"));
-        }
-        if (selectedFields.contains("first_name")) {
-            vkFriend.setFirstName(friend.optString("first_name"));
-        }
-        if (selectedFields.contains("last_name")) {
-            vkFriend.setLastName(friend.optString("last_name"));
-        }
-        if (selectedFields.contains("nickname")) {
-            vkFriend.setNickname(friend.optString("nickname"));
-        }
-        if (selectedFields.contains("sex")) {
-            vkFriend.setSex(friend.optInt("sex"));
-        }
-        if (selectedFields.contains("bdate")) {
-            DateTime bdate = null;
-            String date = friend.optString("bdate");
-            if (!Strings.isNullOrEmpty(date) && !"-99.1".equals(date)) {
-                try {
-                    bdate = formatterFull.parseDateTime(date);
-                } catch (IllegalArgumentException e) {
-                    try {
-                        bdate = formatterPartial.parseDateTime(date);
-                    } catch (IllegalArgumentException ex) {
-                        logger.error("date not parsed at all", ex);
-                    }
-                } catch (UnsupportedOperationException e) {
-                    logger.error("smth really bad happened while parsing date", e);
-                }
-                vkFriend.setBdate(bdate);
+    private List<VKUser> processArray(JSONArray friendsArray) {
+        List<VKUser> friendsList;
+        VKUser vkFriend;
+        JSONObject friend;
+        friendsList = new ArrayList<VKUser>();
+        for (int i = 0; i < friendsArray.length(); i++) {
+            friend = friendsArray.optJSONObject(i);
+            if (friend != null) {
+                vkFriend = Converter.convertFromJSON(friend);
+            } else {
+                vkFriend = new VKUser().setUid(friendsArray.optString(i));
             }
+            friendsList.add(vkFriend);
         }
-        if (selectedFields.contains("city")) {
-            vkFriend.setCity(friend.optString("city"));
-        }
-        if (selectedFields.contains("country")) {
-            vkFriend.setCountry(friend.optString("country"));
-        }
-
-        // FIXME correct fields
-        // if(selectedFields.contains("timezone")){
-        // vkFriend.setTimezone(friend.optString("timezone"));
-        // }
-        // if(selectedFields.contains("photo")){
-        // vkFriend.setPhoto(friend.optString("photo"));
-        // }
-        // if(selectedFields.contains("photo_medium")){
-        // vkFriend.setPhotoMedium(friend.optString("photo_medium"));
-        // }
-        // if(selectedFields.contains("photo_big")){
-        // vkFriend.setPhotoBig(friend.optString("photo_big"));
-        // }
-        // if(selectedFields.contains("domain")){
-        // vkFriend.setDomain(friend.optString("domain"));
-        // }
-
-        return vkFriend;
+        return friendsList;
     }
 
-    protected UsersBase copy() {
-        UsersBase newOne = new Friends(client);
-        newOne.params = this.params;
-        newOne.selectedFields = this.selectedFields;
-        return newOne;
+    private String buildRequest(String uid) {
+        params.put("uid", uid);
+        return joiner.join(params);
+
     }
 
     // *************** SETTERS *************** //
 
-    public UsersBase addCount(Integer count) {
+    public Friends addCount(Integer count) {
         params.put("count", count.toString());
-        return copy();
+        return this;
     }
 
-    public UsersBase addOffset(Integer offset) {
+    public Friends addOffset(Integer offset) {
         params.put("offset", offset.toString());
-        return copy();
+        return this;
     }
 
-    public UsersBase addLid(String lid) {
+    public Friends addLid(String lid) {
         params.put("lid", lid);
-        return copy();
+        return this;
     }
 
     /**
@@ -199,12 +144,36 @@ public class Friends extends UsersBase {
      *            could be "name", "hints"
      * @return
      */
-    public UsersBase addOrder(String order) {
+    public Friends addOrder(String order) {
         if (allowedOrdering.contains(order)) {
             throw new IllegalArgumentException(order + "order is illegal");
         }
 
         params.put("order", order);
-        return copy();
+        return this;
+    }
+
+    public Friends addFields(String... fields) {
+        if (fields.length == 0) {
+            throw new IllegalArgumentException("should pass at least one field name");
+        }
+
+        params.put("fields", Joiner.on(",").skipNulls().join(fields));
+        return this;
+    }
+
+    /**
+     * 
+     * @param nameCase
+     *            could be one of "nom", "gen", "dat", "acc", "ins", "abl"
+     * @return
+     */
+    public Friends addNameCase(String nameCase) {
+        if (!allowedCases.contains(nameCase)) {
+            throw new IllegalArgumentException(nameCase + " nameCase is illegal");
+        }
+
+        params.put("name_case", nameCase);
+        return this;
     }
 }

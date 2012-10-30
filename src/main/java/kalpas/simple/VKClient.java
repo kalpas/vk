@@ -58,6 +58,7 @@ public abstract class VKClient {
                 }
             }
         }
+        logger.debug(result.toString());
         return result;
     }
 

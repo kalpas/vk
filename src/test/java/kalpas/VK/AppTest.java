@@ -9,7 +9,9 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 
 /**
  * Unit test for simple App.
@@ -39,5 +41,20 @@ public class AppTest extends TestCase {
         params.put("param", Arrays.asList("value"));
         params.put("param2", Arrays.asList("value1", "value2"));
         System.out.println(Joiner.on("&").withKeyValueSeparator("=").join(params));
+    }
+
+    public void test1() {
+        VKUser a, b;
+        a = b = new VKUser();
+        a.setUid("uid");
+
+        Function<VKUser, String> getUid = new Function<VKUser, String>() {
+            @Override
+            public String apply(VKUser input) {
+                return input.getUid();
+            }
+        };
+
+        System.out.println(Joiner.on(",").skipNulls().join(Iterables.transform(Arrays.asList(a, b), getUid)));
     }
 }
