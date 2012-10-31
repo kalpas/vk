@@ -1,176 +1,104 @@
 package kalpas.simple.api;
 
-import java.util.Map;
-
-import org.joda.time.DateTime;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-@JsonIgnoreProperties({ "online", "post_source", "attachment" })
 public class WallPost {
 
-    private String              id;
-    private String              toId;
-    private String              fromId;
-    private DateTime            date;
-    private String              text;
-    private int                 replyCount;
-    private Map<String, Object> comments;
-    // private int commentsCount;
-    // private int commentsCanPost;
-    private Map<String, Object> likes;
-    // private int likesCount;
-    // private int likesUserLike;
-    // private int likesCanLike;
-    // private int likesCanPublish;
-    private Map<String, Object> reposts;
-    // private int repostsCount;
-    // private int repostsUserReposted;
-    private String              signerId;
-    private String              copyOwnerId;
-    private String              copyPostId;
-    private String              copyTextId;
-    private Map<String, Object> attachments;
+    public String text;
+    public String reply_count;
+    public Attachment[] attachments;
+    public String       date;        // UNIX date
+    public String       online;
+    public String       id;
+    public PostSource   post_source;
+    public String       to_id;
+    public String       from_id;
+    public Reposts      reposts;
+    public Likes        likes;
+    public Media        media;
+    public Comments     comments;
 
-    public String getId() {
-        return id;
+    public class Attachment {
+
+        public String type;
+
+        public Photo  photo;
+        public Audio  audio;
+        public Video  video;
+        public Link   link;
+
+        public class Photo {
+            public String text;
+            public String height;
+            public String src_small;
+            public String created;
+            public String width;
+            public String owner_id;
+            public String pid;
+            public String access_key;
+            public String src;
+            public String aid;
+            public String src_big;
+        }
+
+        public class Audio {
+            public String duration;
+            public String title;
+            public String owner_id;
+            public String performer;
+            public String aid;
+        }
+
+        public class Video {
+            public String duration;
+            public String title;
+            public String views;
+            public String description;
+            public String image_xbig;
+            public String owner_id;
+            public String image_small;
+            public String image;
+            public String access_key;
+            public String date;
+            public String vid;
+            public String image_big;
+        }
+
+        public class Link {
+            public String title;
+            public String image_src;
+            public String description;
+            public String url;
+        }
+
+    }
+    
+    public class PostSource {
+        public String data;
+        public String type;
+
     }
 
-    @JsonProperty(value = "id",required=false)
-    public WallPost setId(String id) {
-        this.id = id;
-        return this;
+    public class Reposts {
+        public String count;
+        public String user_reposted;
+
     }
 
-    public String getToId() {
-        return toId;
+    public class Likes {
+        public String can_publish;
+        public String can_like;
+        public String user_likes;
+        public String count;
     }
 
-    @JsonProperty(value = "to_id", required = false)
-    public WallPost setToId(String toId) {
-        this.toId = toId;
-        return this;
+    public class Media {
+        public String thumb_src;
+        public String item_id;
+        public String owner_id;
+        public String type;
     }
 
-    public String getFromId() {
-        return fromId;
+    public class Comments {
+        public String count;
+        public String can_post;
     }
-
-    @JsonProperty(value = "from_id", required = false)
-    public WallPost setFromId(String fromId) {
-        this.fromId = fromId;
-        return this;
-    }
-
-    public DateTime getDate() {
-        return date;
-    }
-
-    @JsonProperty(value = "date", required = false)
-    public WallPost setDate(DateTime date) {
-        this.date = date;
-        return this;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    @JsonProperty(value = "text", required = false)
-    public WallPost setText(String text) {
-        this.text = text;
-        return this;
-    }
-
-    public int getReplyCount() {
-        return replyCount;
-    }
-
-    @JsonProperty(value = "reply_count", required = false)
-    public WallPost setReplyCount(int replyCount) {
-        this.replyCount = replyCount;
-        return this;
-    }
-
-    public Map<String, Object> getAttachments() {
-        return attachments;
-    }
-
-    @JsonProperty(value = "attachments", required = false)
-    public WallPost setAttachments(Map<String, Object> attachments) {
-        this.attachments = attachments;
-        return this;
-    }
-
-    public Map<String, Object> getComments() {
-        return comments;
-    }
-
-    @JsonProperty(value = "comments", required = false)
-    public WallPost setComments(Map<String, Object> comments) {
-        this.comments = comments;
-        return this;
-    }
-
-    public Map<String, Object> getLikes() {
-        return likes;
-    }
-
-    @JsonProperty(value = "likes", required = false)
-    public WallPost setLikes(Map<String, Object> likes) {
-        this.likes = likes;
-        return this;
-    }
-
-    public Map<String, Object> getReposts() {
-        return reposts;
-    }
-
-    @JsonProperty(value = "reposts", required = false)
-    public WallPost setReposts(Map<String, Object> reposts) {
-        this.reposts = reposts;
-        return this;
-    }
-
-    public String getSignerId() {
-        return signerId;
-    }
-
-    @JsonProperty(value = "signer_id", required = false)
-    public WallPost setSignerId(String signerId) {
-        this.signerId = signerId;
-        return this;
-    }
-
-    public String getCopyOwnerId() {
-        return copyOwnerId;
-    }
-
-    @JsonProperty(value = "copy_owner_id", required = false)
-    public WallPost setCopyOwnerId(String copyOwnerId) {
-        this.copyOwnerId = copyOwnerId;
-        return this;
-    }
-
-    public String getCopyPostId() {
-        return copyPostId;
-    }
-
-    @JsonProperty(value = "copy_post_id", required = false)
-    public WallPost setCopyPostId(String copyPostId) {
-        this.copyPostId = copyPostId;
-        return this;
-    }
-
-    public String getCopyTextId() {
-        return copyTextId;
-    }
-
-    @JsonProperty(value = "copy_text_id", required = false)
-    public WallPost setCopyTextId(String copyTextId) {
-        this.copyTextId = copyTextId;
-        return this;
-    }
-
 }
