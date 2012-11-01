@@ -7,18 +7,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public abstract class VKClient {
 
     private Logger logger = Logger.getLogger(VKClient.class);
 
-    public JSONObject send(String request) {
+    public InputStream send(String request) {
         return handleResponseInternal(sendInternal(request));
     }
 
@@ -34,35 +31,21 @@ public abstract class VKClient {
         throw new UnsupportedOperationException();
     }
 
-    protected JSONObject handleResponseInternal(HttpResponse response) {
+    protected InputStream handleResponseInternal(HttpResponse response) {
 
-        JSONObject result = null;
         HttpEntity entity = response.getEntity();
+        InputStream stream = null;
         if (entity != null) {
-            InputStream stream = null;
             try {
                 stream = entity.getContent();
-                result = new JSONObject(IOUtils.toString(stream));
-                stream.close();
-            } catch (JSONException e) {
-                logger.error("error parsing JSON ", e);
-            } catch (IllegalStateException e) {
-                logger.error("IO exception ", e);
-            } catch (IOException e) {
-                logger.error("cannot create stream from response ", e);
-            } finally {
-                try {
-                    stream.close();
-                } catch (Exception e) {
-                    logger.fatal("check it. exeption in finally block", e);
-                }
+            } catch (IllegalStateException | IOException e) {
+                logger.error("error ", e);
             }
         }
-        logger.debug(result.toString());
-        return result;
+        return stream;
     }
 
-    public class VKAsyncResult implements Future<JSONObject> {
+    public class VKAsyncResult implements Future<InputStream> {
 
         private Future<HttpResponse> future;
 
@@ -74,8 +57,8 @@ public abstract class VKClient {
             this.future = future;
         }
 
-        public JSONObject get() {
-            JSONObject result = null;
+        public InputStream get() {
+            InputStream result = null;
             try {
                 result = handleResponseInternal(future.get());
             } catch (InterruptedException e) {
@@ -92,9 +75,9 @@ public abstract class VKClient {
         }
 
         @Override
-        public JSONObject get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
+        public InputStream get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
                 TimeoutException {
-            JSONObject result = null;
+            InputStream result = null;
             try {
                 result = handleResponseInternal(future.get(timeout, unit));
             } catch (InterruptedException e) {

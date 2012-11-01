@@ -2,10 +2,10 @@ package kalpas.simple.api;
 
 public class WallPost {
 
-    public String text;
-    public String reply_count;
+    public String       text;
+    public String       reply_count;
     public Attachment[] attachments;
-    public String       date;        // UNIX date
+    public String       date;       // UNIX date
     public String       online;
     public String       id;
     public PostSource   post_source;
@@ -17,13 +17,14 @@ public class WallPost {
     public Comments     comments;
 
     public class Attachment {
+        public String      type;
 
-        public String type;
-
-        public Photo  photo;
-        public Audio  audio;
-        public Video  video;
-        public Link   link;
+        public Photo       photo;
+        public Audio       audio;
+        public Video       video;
+        public Link        link;
+        public PostedPhoto posted_photo;
+        public Graffiti    graffiti;
 
         public class Photo {
             public String text;
@@ -69,8 +70,27 @@ public class WallPost {
             public String url;
         }
 
+        public class PostedPhoto {
+            public String pid;
+            public String owner_id;
+            public String src;
+            public String src_big;
+        }
+
+        public class Graffiti {
+            public String gid;
+            public String owner_id;
+            public String src;
+            public String src_big;
+        }
+
+        public class Poll {
+            public String poll_id;
+            public String question;
+        }
+
     }
-    
+
     public class PostSource {
         public String data;
         public String type;

@@ -1,8 +1,11 @@
 package kalpas.VK;
 
+import java.util.List;
+
 import kalpas.VKModule;
 import kalpas.simple.api.Friends;
 import kalpas.simple.api.Wall;
+import kalpas.simple.api.WallPost;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -28,8 +31,8 @@ public class App {
             BasicConfigurator.configure();
             injector = Guice.createInjector(new VKModule());
             container = injector.getInstance(HttpClientContainer.class);
-            Wall wall = injector.getInstance(Wall.class);
-            wall.get("1080446");
+            Wall wall = injector.getInstance(Wall.class).addCount("99");
+            List<WallPost> posts = wall.get("1080446").getValue();
 
             // Logger.getLogger("org.apache").setLevel(Level.FATAL);
             // friends =

@@ -11,12 +11,15 @@ import java.util.Map;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import kalpas.simple.api.WallPost;
+import kalpas.simple.api.AnotherWallPostsResult;
+import kalpas.simple.api.WallPostDeserializer;
+import kalpas.simple.api.WallPostsResult;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * Unit test for simple App.
@@ -64,15 +67,33 @@ public class AppTest extends TestCase {
     }
 
     public void test2() {
-        WallPost post = null;
+        WallPostsResult posts = null;
+        GsonBuilder g = new GsonBuilder();
+        WallPostDeserializer vkResultDeserializer = new WallPostDeserializer();
+        g.registerTypeAdapter(WallPostsResult.class, vkResultDeserializer);
         try {
-            Gson g = new Gson();
-            post = g.fromJson(new InputStreamReader(new FileInputStream(new File("1.json"))), WallPost.class);
+            Gson gson = g.create();
+            posts = gson.fromJson(new InputStreamReader(new FileInputStream(new File("wall.json"))),
+                    WallPostsResult.class);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.err.println(post);
+        System.err.println(posts);
+
+    }
+
+    public void test3() {
+        AnotherWallPostsResult posts = null;
+        try {
+            Gson gson = new Gson();
+            posts = gson.fromJson(new InputStreamReader(new FileInputStream(new File("wall.json"))),
+                    AnotherWallPostsResult.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.err.println(posts);
 
     }
 }
