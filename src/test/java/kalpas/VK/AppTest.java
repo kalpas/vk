@@ -1,8 +1,5 @@
 package kalpas.VK;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -11,15 +8,10 @@ import java.util.Map;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import kalpas.simple.api.AnotherWallPostsResult;
-import kalpas.simple.api.WallPostDeserializer;
-import kalpas.simple.api.WallPostsResult;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * Unit test for simple App.
@@ -66,34 +58,4 @@ public class AppTest extends TestCase {
         System.out.println(Joiner.on(",").skipNulls().join(Iterables.transform(Arrays.asList(a, b), getUid)));
     }
 
-    public void test2() {
-        WallPostsResult posts = null;
-        GsonBuilder g = new GsonBuilder();
-        WallPostDeserializer vkResultDeserializer = new WallPostDeserializer();
-        g.registerTypeAdapter(WallPostsResult.class, vkResultDeserializer);
-        try {
-            Gson gson = g.create();
-            posts = gson.fromJson(new InputStreamReader(new FileInputStream(new File("wall.json"))),
-                    WallPostsResult.class);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.err.println(posts);
-
-    }
-
-    public void test3() {
-        AnotherWallPostsResult posts = null;
-        try {
-            Gson gson = new Gson();
-            posts = gson.fromJson(new InputStreamReader(new FileInputStream(new File("wall.json"))),
-                    AnotherWallPostsResult.class);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.err.println(posts);
-
-    }
 }

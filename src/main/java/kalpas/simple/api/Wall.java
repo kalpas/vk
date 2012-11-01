@@ -26,18 +26,21 @@ import com.google.inject.Inject;
 
 public class Wall {
 
-    private static final Gson   gson   = new Gson();
+    private static final Integer MAX_GET_COUNT = 100;
 
-    private Logger              logger = Logger.getLogger(Wall.class);
-    private VKClient            client;
+    private static final Gson    gson          = new Gson();
 
-    private static final String get    = "wall.get";
+    private Logger               logger        = Logger.getLogger(Wall.class);
+    private VKClient             client;
 
-    static final MapJoiner      joiner = Joiner.on("&").withKeyValueSeparator("=");
+    private static final String  get           = "wall.get";
 
-    private Map<String, String> params = new HashMap<>();
+    static final MapJoiner       joiner        = Joiner.on("&").withKeyValueSeparator("=");
 
-    private Integer             count;
+    private Map<String, String>  params        = new HashMap<>();
+
+    private Integer              count         = 0;
+    private Integer              offset        = 0;
 
     @Inject
     public Wall(VKClient client) {
@@ -46,6 +49,21 @@ public class Wall {
 
     public Map.Entry<Integer, List<WallPost>> get(String ownerId) {
         List<WallPost> wallPosts = new ArrayList<>();
+        int wallPostsCount = 0;
+
+        boolean getAll = count.equals(-1);
+        count = getAll ? MAX_GET_COUNT : count;
+        for (Integer step = offset; step < count; step += MAX_GET_COUNT) {
+            params.put("count", count < MAX_GET_COUNT ? count.toString() : MAX_GET_COUNT.toString());
+            params.put("offset", step.toString());
+            wallPostsCount = get(ownerId, wallPosts);
+            count = getAll ? wallPostsCount : count;
+        }
+        return new AbstractMap.SimpleEntry<Integer, List<WallPost>>(wallPostsCount, wallPosts);
+
+    }
+
+    private int get(String ownerId, List<WallPost> wallPosts) {
         int wallPostsCount = 0;
 
         InputStream result = client.send(get + "?" + buildRequest(ownerId));
@@ -59,11 +77,13 @@ public class Wall {
                 while (iterator.hasNext()) {
                     wallPosts.add(gson.fromJson(iterator.next(), WallPost.class));
                 }
+            } else {
+                logger.error("error " + response.toString());
             }
         } catch (JsonSyntaxException | JsonIOException e) {
             logger.error("exception while parsing json", e);
         }
-        return new AbstractMap.SimpleEntry<Integer, List<WallPost>>(wallPostsCount, wallPosts);
+        return wallPostsCount;
     }
 
     protected String buildRequest(String ownerId) {
@@ -71,13 +91,13 @@ public class Wall {
         return joiner.join(params);
     }
 
-    public Wall addOffset(String offset) {
-        params.put("offset", offset);
+    public Wall addOffset(Integer offset) {
+        this.offset = offset;
         return this;
     }
 
     public Wall addCount(Integer count) {
-        params.put("count", count.toString());
+        this.count = count;
         return this;
     }
 

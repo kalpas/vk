@@ -31,7 +31,7 @@ public class App {
             BasicConfigurator.configure();
             injector = Guice.createInjector(new VKModule());
             container = injector.getInstance(HttpClientContainer.class);
-            Wall wall = injector.getInstance(Wall.class).addCount("99");
+            Wall wall = injector.getInstance(Wall.class).addCount(0);
             List<WallPost> posts = wall.get("1080446").getValue();
 
             // Logger.getLogger("org.apache").setLevel(Level.FATAL);
