@@ -1,13 +1,16 @@
 package kalpas;
 
 import java.util.List;
+import java.util.Map;
 
-import kalpas.simple.DO.WallPost;
+import kalpas.simple.DO.User;
 import kalpas.simple.VKApi.Friends;
+import kalpas.simple.VKApi.Users;
 import kalpas.simple.VKApi.Wall;
 import kalpas.simple.helper.HttpClientContainer;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.inject.Guice;
@@ -32,17 +35,23 @@ public class App {
             injector = Guice.createInjector(new VKModule());
             container = injector.getInstance(HttpClientContainer.class);
             Wall wall = injector.getInstance(Wall.class).addCount(0);
-            List<WallPost> posts = wall.get("1080446").getValue();
+            // List<WallPost> posts = wall.get("1080446").getValue();
 
-            // Logger.getLogger("org.apache").setLevel(Level.FATAL);
-            // friends =
-            // injector.getInstance(Friends.class).addFields("first_name",
-            // "last_name", "sex");
-            // List<VKUser> myFriends = friends.get("1080446");
-            // Users users =
-            // injector.getInstance(Users.class).addFields("first_name",
-            // "last_name", "sex");
-            // Map<VKUser, List<VKUser>> allFriends = friends.get(myFriends);
+            Logger.getLogger("org.apache").setLevel(Level.FATAL);
+            friends = injector.getInstance(Friends.class);
+            List<User> myFriends = friends.get("1080446");
+            Users users = injector.getInstance(Users.class).addFields("uid", "first_name", "last_name", "nickname",
+                    "screen_name", "sex", "bdate", "city", "country", "timezone", "photo", "photo_medium", "photo_big",
+                    "has_mobile", "contacts", "education", "online", "counters", "lists", "can_post",
+                    "can_see_all_posts", "activity", "last_seen", "relation", "exports", "wall_comments",
+                    "connections", "interests", "movies", "tv", "books", "games", "about", "domain");
+            myFriends = users.get(myFriends);
+            User me = users.get("1080446");
+            me = users.get(me);
+            List<User> test = users.batchGet("1080446");
+            List<User> test2 = users.batchGet(myFriends);
+
+            Map<User, List<User>> allFriends = friends.get(myFriends);
             // GMLHelper gmlWriter = new GMLHelper();
             // FriendsGraph graph = new FriendsGraph();
             // graph.addInterconnections(allFriends);

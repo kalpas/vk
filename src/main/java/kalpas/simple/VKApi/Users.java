@@ -22,7 +22,6 @@ import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
@@ -65,7 +64,7 @@ public class Users {
 
     public User get(User user) {
         InputStream stream = client.send(requstName + "?" + buildRequest(user.uid));
-        user = getUser(stream);
+        user = getUsers(stream).get(0);
         return user;
     }
 
@@ -88,7 +87,7 @@ public class Users {
                     continue;
                 }
                 iterator.remove();
-                user = getUser(entry.getValue().get());
+                user = getUsers(entry.getValue().get()).get(0);
                 users.add(user);
             }
         }
@@ -121,7 +120,8 @@ public class Users {
 
     private List<User> getUsers(InputStream stream) {
         List<User> users = new ArrayList<>();
-        JsonArray array = parser.parse(new InputStreamReader(stream)).getAsJsonArray();
+        JsonArray array = parser.parse(new InputStreamReader(stream)).getAsJsonObject().getAsJsonArray("response");
+        logger.debug(array);
         if (array != null) {
             Iterator<JsonElement> iterator = array.iterator();
             while (iterator.hasNext()) {
@@ -132,20 +132,10 @@ public class Users {
         return users;
     }
 
-    private User getUser(InputStream stream) {
-        User user = null;
-        try {
-            JsonElement response = parser.parse(new InputStreamReader(stream));
-            user = getUser(response);
-        } catch (JsonSyntaxException | JsonIOException e) {
-            logger.error("exception while parsing json", e);
-        }
-        return user;
-    }
-
     private User getUser(JsonElement element) {
         try {
-            return gson.fromJson(element.getAsJsonObject().getAsJsonObject("response"), User.class);
+            logger.debug(element);
+            return gson.fromJson(element, User.class);
         } catch (JsonSyntaxException e) {
             logger.error("exception while parsing json", e);
             return null;

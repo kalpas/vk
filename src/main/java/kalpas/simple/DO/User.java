@@ -1,7 +1,5 @@
 package kalpas.simple.DO;
 
-import org.joda.time.DateTime;
-
 import com.google.common.base.Joiner;
 
 public class User {
@@ -12,7 +10,7 @@ public class User {
     public String      nickname;
     // 2 - male, 1 - female
     public int         sex;
-    public DateTime    bdate;
+    public String      bdate;
     public String      city;
     public String      country;
     public String      photo_50;
@@ -34,7 +32,7 @@ public class User {
     public String      can_see_all_posts;
     public String      can_write_public_message;
     public String      activity;
-    public String      last_seen;
+    public LastSeen    last_seen;
     // 1 - не женат/не замужем
     // 2 - есть друг/есть подруга
     // 3 - помолвлен/помолвлена
@@ -120,5 +118,9 @@ public class User {
         public String uid;
         // grandchild, grandparent, child, sibling, parent.
         public String type;
+    }
+
+    public class LastSeen {
+        public String time;
     }
 }

@@ -79,9 +79,8 @@ public class Friends {
     }
 
     private void process(Map<User, List<User>> friendsMap, Map<User, VKAsyncResult> results) {
-
+        JsonArray friends;
         List<User> friendsList;
-        JsonArray friendsArray = null;
         Iterator<Map.Entry<User, VKClient.VKAsyncResult>> iterator;
         Map.Entry<User, VKClient.VKAsyncResult> entry;
         do {
@@ -93,10 +92,10 @@ public class Friends {
                     iterator.remove();
                     try {
                         JsonObject json = parser.parse(new InputStreamReader(entry.getValue().get())).getAsJsonObject();
-                        JsonArray friends = json.getAsJsonArray("response");
+                        friends = json.getAsJsonArray("response");
                         if (friends != null) {
                             logger.debug("got result " + entry.getKey());
-                            friendsList = processArray(friendsArray);
+                            friendsList = processArray(friends);
                             friendsMap.put(entry.getKey(), friendsList);
                         }
                     } catch (JsonParseException e) {
@@ -114,17 +113,18 @@ public class Friends {
         Iterator<JsonElement> iterator = array.iterator();
         while (iterator.hasNext()) {
             user = null;
+            element = iterator.next();
             try {
-                element = iterator.next();
                 user = gson.fromJson(element, User.class);
-                if (user == null) {
+            } catch (JsonSyntaxException e) {
+                try{
                     user = new User();
                     user.uid = element.getAsString();
+                } catch (JsonSyntaxException ex) {
+                    logger.error("error parsing json", ex);
                 }
-                users.add(user);
-            } catch (JsonSyntaxException e) {
-                logger.error("error parsing json", e);
             }
+            users.add(user);
         }
         return users;
     }
