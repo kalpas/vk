@@ -1,4 +1,4 @@
-package kalpas.simple;
+package kalpas.simple.VKApi.client;
 
 import java.io.IOException;
 import java.io.InputStream;

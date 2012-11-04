@@ -1,9 +1,9 @@
-package kalpas.simple;
+package kalpas.simple.VKApi.client;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
 
-import kalpas.VK.HttpClientContainer;
+import kalpas.simple.helper.HttpClientContainer;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.Validate;

@@ -1,4 +1,4 @@
-package kalpas.simple.api;
+package kalpas.simple.VKApi;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,7 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import kalpas.simple.VKClient;
+import kalpas.simple.DO.WallPost;
+import kalpas.simple.VKApi.client.VKClient;
 
 import org.apache.log4j.Logger;
 
@@ -28,6 +29,7 @@ public class Wall {
 
     private static final Integer MAX_GET_COUNT = 100;
 
+    // FIXME make it injectable
     private static final Gson    gson          = new Gson();
 
     private Logger               logger        = Logger.getLogger(Wall.class);

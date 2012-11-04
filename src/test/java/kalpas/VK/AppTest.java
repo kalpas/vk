@@ -8,6 +8,7 @@ import java.util.Map;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import kalpas.simple.DO.User;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -44,14 +45,14 @@ public class AppTest extends TestCase {
     }
 
     public void test1() {
-        VKUser a, b;
-        a = b = new VKUser();
-        a.setUid("uid");
+        User a, b;
+        a = b = new User();
+        a.uid = "uid";
 
-        Function<VKUser, String> getUid = new Function<VKUser, String>() {
+        Function<User, String> getUid = new Function<User, String>() {
             @Override
-            public String apply(VKUser input) {
-                return input.getUid();
+            public String apply(User input) {
+                return input.uid;
             }
         };
 

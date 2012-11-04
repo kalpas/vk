@@ -1,9 +1,9 @@
 package kalpas;
 
-import kalpas.VK.HttpClientContainer;
-import kalpas.simple.AuthHelper;
-import kalpas.simple.VKClient;
-import kalpas.simple.VKHttpClient;
+import kalpas.simple.VKApi.client.VKClient;
+import kalpas.simple.VKApi.client.VKHttpClient;
+import kalpas.simple.helper.AuthHelper;
+import kalpas.simple.helper.HttpClientContainer;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;

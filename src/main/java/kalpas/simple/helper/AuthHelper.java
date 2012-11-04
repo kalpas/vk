@@ -1,4 +1,4 @@
-package kalpas.simple;
+package kalpas.simple.helper;
 
 import java.net.URISyntaxException;
 
@@ -34,7 +34,7 @@ public class AuthHelper {
 
     @Inject
     public AuthHelper(@Named("isHttps") Boolean https) {
-        this.isHttps = https;
+        isHttps = https;
     }
 
     public void auth() {

@@ -1,4 +1,4 @@
-package kalpas.simple.api;
+package kalpas.simple.DO;
 
 public class WallPost {
 

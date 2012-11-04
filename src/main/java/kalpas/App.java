@@ -1,11 +1,11 @@
-package kalpas.VK;
+package kalpas;
 
 import java.util.List;
 
-import kalpas.VKModule;
-import kalpas.simple.api.Friends;
-import kalpas.simple.api.Wall;
-import kalpas.simple.api.WallPost;
+import kalpas.simple.DO.WallPost;
+import kalpas.simple.VKApi.Friends;
+import kalpas.simple.VKApi.Wall;
+import kalpas.simple.helper.HttpClientContainer;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;

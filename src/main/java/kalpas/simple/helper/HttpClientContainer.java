@@ -1,4 +1,4 @@
-package kalpas.VK;
+package kalpas.simple.helper;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.ClientPNames;

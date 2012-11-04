@@ -1,4 +1,4 @@
-package kalpas.simple;
+package kalpas.simple.helper;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -6,7 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
-import kalpas.VK.VKUser;
+import kalpas.simple.DO.FriendsGraph;
+import kalpas.simple.DO.User;
 
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -25,14 +26,14 @@ public class GMLHelper {
             bw.newLine();
             bw.write("\tid 1");
             bw.newLine();
-            for (VKUser node : graph.getNodes()) {
+            for (User node : graph.getNodes()) {
                 bw.write("\tnode [");
                 bw.newLine();
-                bw.write("\t\tid " + node.getUid());
+                bw.write("\t\tid " + node.uid);
                 bw.newLine();
-                bw.write("\t\tlabel \"" + node.getFirstName() + " " + node.getLastName() + "\"");
+                bw.write("\t\tlabel \"" + node.first_name + " " + node.last_name + "\"");
                 bw.newLine();
-                bw.write("\t\tsex " + node.getSex());
+                bw.write("\t\tsex " + node.sex);
                 bw.newLine();
                 bw.write("\t]");
                 bw.newLine();
