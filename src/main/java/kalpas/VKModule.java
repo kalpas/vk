@@ -5,8 +5,13 @@ import kalpas.simple.VKApi.client.VKHttpClient;
 import kalpas.simple.helper.AuthHelper;
 import kalpas.simple.helper.HttpClientContainer;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Joiner.MapJoiner;
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
@@ -16,6 +21,8 @@ public class VKModule extends AbstractModule {
     protected void configure() {
         bind(VKClient.class).to(VKHttpClient.class);
         bind(Boolean.class).annotatedWith(Names.named("isHttps")).toInstance(false);
+        bind(Gson.class).in(Singleton.class);
+        bind(JsonParser.class).in(Singleton.class);
     }
 
     @Provides
@@ -34,6 +41,11 @@ public class VKModule extends AbstractModule {
     @Named("secret")
     public String provideSecret(AuthHelper helper) {
         return helper.getSecret();
+    }
+
+    @Provides
+    public MapJoiner provideMapJoiner() {
+        return Joiner.on("&").withKeyValueSeparator("=");
     }
 
 }

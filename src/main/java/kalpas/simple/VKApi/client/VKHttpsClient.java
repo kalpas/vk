@@ -11,6 +11,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.log4j.Logger;
 
+//FIXME it is not finished
 public class VKHttpsClient extends VKClient {
 
     private Logger          logger = Logger.getLogger(VKHttpsClient.class);

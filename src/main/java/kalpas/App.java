@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import kalpas.simple.DO.User;
+import kalpas.simple.DO.WallPost;
 import kalpas.simple.VKApi.Friends;
+import kalpas.simple.VKApi.Likes;
 import kalpas.simple.VKApi.Users;
 import kalpas.simple.VKApi.Wall;
 import kalpas.simple.helper.HttpClientContainer;
@@ -32,12 +34,17 @@ public class App {
         HttpClientContainer container = null;
         try {
             BasicConfigurator.configure();
+            Logger.getLogger("org.apache").setLevel(Level.FATAL);
+
             injector = Guice.createInjector(new VKModule());
             container = injector.getInstance(HttpClientContainer.class);
-            Wall wall = injector.getInstance(Wall.class).addCount(0);
-            // List<WallPost> posts = wall.get("1080446").getValue();
+            Wall wall = injector.getInstance(Wall.class);
+            Likes likes = injector.getInstance(Likes.class).addType("post");
+            List<WallPost> posts = wall.get("1080446").getValue();
+            for (WallPost post : posts) {
+                post.likes = likes.get(post.to_id, post.id);
+            }
 
-            Logger.getLogger("org.apache").setLevel(Level.FATAL);
             friends = injector.getInstance(Friends.class);
             List<User> myFriends = friends.get("1080446");
             Users users = injector.getInstance(Users.class).addFields("uid", "first_name", "last_name", "nickname",

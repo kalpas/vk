@@ -11,10 +11,10 @@ import java.util.Map;
 
 import kalpas.simple.DO.WallPost;
 import kalpas.simple.VKApi.client.VKClient;
+import kalpas.simple.VKApi.client.VKClient.VKAsyncResult;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -29,20 +29,20 @@ public class Wall {
 
     private static final Integer MAX_GET_COUNT = 100;
 
-    // FIXME make it injectable
-    private static final Gson    gson          = new Gson();
+    @Inject
+    private Gson                 gson;
+    @Inject
+    private JsonParser           parser;
 
     private Logger               logger        = Logger.getLogger(Wall.class);
     private VKClient             client;
 
     private static final String  get           = "wall.get";
 
-    static final MapJoiner       joiner        = Joiner.on("&").withKeyValueSeparator("=");
+    @Inject
+    private MapJoiner            joiner;
 
     private Map<String, String>  params        = new HashMap<>();
-
-    private Integer              count         = 0;
-    private Integer              offset        = 0;
 
     @Inject
     public Wall(VKClient client) {
@@ -51,26 +51,44 @@ public class Wall {
 
     public Map.Entry<Integer, List<WallPost>> get(String ownerId) {
         List<WallPost> wallPosts = new ArrayList<>();
-        int wallPostsCount = 0;
+        int wallPostsCount = MAX_GET_COUNT;
 
-        boolean getAll = count.equals(-1);
-        count = getAll ? MAX_GET_COUNT : count;
-        for (Integer step = offset; step < count; step += MAX_GET_COUNT) {
-            params.put("count", count < MAX_GET_COUNT ? count.toString() : MAX_GET_COUNT.toString());
+        params.put("count", MAX_GET_COUNT.toString());
+        params.put("offset", "0");
+        wallPostsCount = get(ownerId, wallPosts);
+
+        List<VKAsyncResult> futures = new ArrayList<>();
+        for (Integer step = MAX_GET_COUNT; step < wallPostsCount; step += MAX_GET_COUNT) {
+            params.put("count", MAX_GET_COUNT.toString());
             params.put("offset", step.toString());
-            wallPostsCount = get(ownerId, wallPosts);
-            count = getAll ? wallPostsCount : count;
+            futures.add(client.sendAsync(get + "?" + buildRequest(ownerId)));
         }
+
+        VKAsyncResult future;
+        while (!futures.isEmpty()) {
+            Iterator<VKAsyncResult> iterator = futures.iterator();
+            while (iterator.hasNext()) {
+                future = iterator.next();
+                if (!future.isDone()) {
+                    continue;
+                }
+                iterator.remove();
+                get(wallPosts, future.get());
+            }
+        }
+
         return new AbstractMap.SimpleEntry<Integer, List<WallPost>>(wallPostsCount, wallPosts);
 
     }
 
     private int get(String ownerId, List<WallPost> wallPosts) {
-        int wallPostsCount = 0;
-
         InputStream result = client.send(get + "?" + buildRequest(ownerId));
+        return get(wallPosts, result);
+    }
+
+    private int get(List<WallPost> wallPosts, InputStream result) {
+        int wallPostsCount = 0;
         try {
-            JsonParser parser = new JsonParser();
             JsonObject response = parser.parse(new InputStreamReader(result)).getAsJsonObject();
             JsonArray posts = response.getAsJsonArray("response");
             if (posts != null) {
@@ -91,16 +109,6 @@ public class Wall {
     protected String buildRequest(String ownerId) {
         params.put("owner_id", ownerId);
         return joiner.join(params);
-    }
-
-    public Wall addOffset(Integer offset) {
-        this.offset = offset;
-        return this;
-    }
-
-    public Wall addCount(Integer count) {
-        this.count = count;
-        return this;
     }
 
     // owner, others,all

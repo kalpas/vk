@@ -34,13 +34,15 @@ public class Friends {
     private final List<String>  allowedOrdering = Arrays.asList("name", "hints");
     private final List<String>  allowedCases    = Arrays.asList("nom", "gen", "dat", "acc", "ins", "abl");
 
-    static final MapJoiner      joiner          = Joiner.on("&").withKeyValueSeparator("=");
+    @Inject
+    private MapJoiner           joiner;
 
     private Logger              logger          = Logger.getLogger(Friends.class);
 
-    // FIXME make both injectable
-    private static final Gson   gson            = new Gson();
-    private JsonParser          parser          = new JsonParser();
+    @Inject
+    private Gson                gson;
+    @Inject
+    private JsonParser          parser;
 
     private VKClient            client;
 

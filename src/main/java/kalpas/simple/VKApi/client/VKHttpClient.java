@@ -55,8 +55,6 @@ public class VKHttpClient extends VKClient {
             logger.error("IO exception", e);
         }
 
-        logger.debug(response);
-
         return response;
     }
 

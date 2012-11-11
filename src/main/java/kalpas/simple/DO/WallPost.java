@@ -12,7 +12,7 @@ public class WallPost {
     public String       to_id;
     public String       from_id;
     public Reposts      reposts;
-    public Likes        likes;
+    public Like        likes;
     public Media        media;
     public Comments     comments;
 
@@ -101,13 +101,6 @@ public class WallPost {
         public String count;
         public String user_reposted;
 
-    }
-
-    public class Likes {
-        public String can_publish;
-        public String can_like;
-        public String user_likes;
-        public String count;
     }
 
     public class Media {

@@ -32,15 +32,17 @@ public class Users {
 
     private final List<String>     allowedCases = Arrays.asList("nom", "gen", "dat", "acc", "ins", "abl");
 
-    static final MapJoiner         joiner       = Joiner.on("&").withKeyValueSeparator("=");
+    @Inject
+    private MapJoiner              joiner;
 
     protected Logger               logger       = Logger.getLogger(Users.class);
 
     protected VKClient             client;
 
-    // FIXME make both injectable
-    private static final Gson      gson         = new Gson();
-    private JsonParser             parser       = new JsonParser();
+    @Inject
+    private Gson                   gson;
+    @Inject
+    private JsonParser             parser;
 
     protected Map<String, String>  params       = new HashMap<>();
 
