@@ -75,7 +75,6 @@ public class Users {
         for (User user : users) {
             futures.put(user, client.sendAsync(requstName + "?" + buildRequest(user.uid)));
         }
-        logger.debug("finished with sending requsests");
 
         users = new ArrayList<>();
         Iterator<Map.Entry<User, VKAsyncResult>> iterator = null;
@@ -123,7 +122,6 @@ public class Users {
     private List<User> getUsers(InputStream stream) {
         List<User> users = new ArrayList<>();
         JsonArray array = parser.parse(new InputStreamReader(stream)).getAsJsonObject().getAsJsonArray("response");
-        logger.debug(array);
         if (array != null) {
             Iterator<JsonElement> iterator = array.iterator();
             while (iterator.hasNext()) {
@@ -136,7 +134,6 @@ public class Users {
 
     private User getUser(JsonElement element) {
         try {
-            logger.debug(element);
             return gson.fromJson(element, User.class);
         } catch (JsonSyntaxException e) {
             logger.error("exception while parsing json", e);

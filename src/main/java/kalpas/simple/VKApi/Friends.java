@@ -67,6 +67,10 @@ public class Friends {
         return friendsList;
     }
 
+    public List<User> get(User user) {
+        return get(user.uid);
+    }
+
     public Map<User, List<User>> get(List<User> friends) {
 
         Map<User, List<User>> friendsMap = new HashMap<User, List<User>>();
@@ -74,7 +78,6 @@ public class Friends {
         for (User friend : friends) {
             futures.put(friend, client.sendAsync(get + "?" + buildRequest(friend.uid)));
         }
-        logger.debug("finished with sending requsests");
 
         process(friendsMap, futures);
         return friendsMap;
@@ -96,7 +99,6 @@ public class Friends {
                         JsonObject json = parser.parse(new InputStreamReader(entry.getValue().get())).getAsJsonObject();
                         friends = json.getAsJsonArray("response");
                         if (friends != null) {
-                            logger.debug("got result " + entry.getKey());
                             friendsList = processArray(friends);
                             friendsMap.put(entry.getKey(), friendsList);
                         }

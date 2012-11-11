@@ -58,6 +58,13 @@ public class User {
     public String      photo_big;
     public String      domain;
 
+    public User() {
+    }
+
+    public User(String uid) {
+        this.uid = uid;
+    }
+
     @Override
     public String toString() {
         return Joiner.on(" ").skipNulls().join(uid, first_name, last_name);

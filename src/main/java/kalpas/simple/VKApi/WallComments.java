@@ -52,7 +52,7 @@ public class WallComments {
         params.put("sort", "asc");
     }
 
-    public List<Comment> get(List<WallPost> posts) {
+    public List<WallPost> get(List<WallPost> posts) {
         params.put("count", MAX_COMMENTS.toString());
         params.put("offset", "0");
 
@@ -83,7 +83,7 @@ public class WallComments {
             }
         }
 
-        return null;
+        return posts;
     }
 
     public List<Comment> get(String ownerId, String postId) {

@@ -18,6 +18,11 @@ public class WallPost {
     public Media        media;
     public Comments     comments;
 
+    @Override
+    public String toString() {
+        return text + "\n" + attachments.length + " attachements\n" + likes + "\n" + comments;
+    }
+
     public class Attachment {
         public String      type;
 
@@ -116,5 +121,10 @@ public class WallPost {
         public Integer       count;
         public String        can_post;
         public List<Comment> comments;
+
+        @Override
+        public String toString() {
+            return count + " comments:" + comments.toString();
+        }
     }
 }

@@ -51,7 +51,7 @@ public class Likes {
         return get(itemId);
     }
     
-    public void get(List<WallPost> posts) {
+    public List<WallPost> get(List<WallPost> posts) {
         Integer step = "1".equals(params.get("friends_only")) ? 100:1000;
         params.put("count", step.toString());
         params.put("offset", "0");
@@ -89,7 +89,7 @@ public class Likes {
                 getAll(post.id, step, likes);
             }
         }
-
+        return posts;
     }
 
     public Like get(String itemId) {
@@ -117,7 +117,7 @@ public class Likes {
 
     private Like getAll(String itemId, Integer step, Like like) {
         InputStream stream;
-        List<Integer> usersLike = new ArrayList<>();
+        List<String> usersLike = new ArrayList<>();
         usersLike.addAll(Arrays.asList(like.users));
         for (Integer offset = step; offset < like.count; offset += step) {
             params.put("offset", offset.toString());
@@ -125,7 +125,7 @@ public class Likes {
             like = getChunk(stream);
             usersLike.addAll(Arrays.asList(like.users));
         }
-        like.users = usersLike.toArray(new Integer[0]);
+        like.users = usersLike.toArray(new String[0]);
         return like;
     }
 
