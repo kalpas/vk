@@ -1,5 +1,7 @@
 package kalpas.simple.DO;
 
+import java.util.List;
+
 public class WallPost {
 
     public String       text;
@@ -12,7 +14,7 @@ public class WallPost {
     public String       to_id;
     public String       from_id;
     public Reposts      reposts;
-    public Like        likes;
+    public Like         likes;
     public Media        media;
     public Comments     comments;
 
@@ -111,7 +113,8 @@ public class WallPost {
     }
 
     public class Comments {
-        public String count;
-        public String can_post;
+        public Integer       count;
+        public String        can_post;
+        public List<Comment> comments;
     }
 }

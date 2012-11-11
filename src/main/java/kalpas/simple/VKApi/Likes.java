@@ -18,8 +18,10 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
 
 public class Likes {
@@ -52,6 +54,7 @@ public class Likes {
     public void get(List<WallPost> posts) {
         Integer step = "1".equals(params.get("friends_only")) ? 100:1000;
         params.put("count", step.toString());
+        params.put("offset", "0");
         
         Map<WallPost, VKAsyncResult> futures = new HashMap<>();
         
@@ -82,7 +85,7 @@ public class Likes {
         Like likes;
         for (WallPost post : posts) {
             likes = post.likes;
-            if (gotNotAllUsers(likes)) {
+            if (notAllUsersGot(likes)) {
                 getAll(post.id, step, likes);
             }
         }
@@ -92,6 +95,7 @@ public class Likes {
     public Like get(String itemId) {
         Integer step = "1".equals(params.get("friends_only")) ? 100:1000;
         params.put("count", step.toString());
+        params.put("offset", "0");
 
         InputStream stream = client.send(get + "?" + buildRequest(itemId));
         Like like = get(itemId, step, stream);
@@ -101,13 +105,13 @@ public class Likes {
 
     private Like get(String itemId, Integer step, InputStream stream) {
         Like like = getChunk(stream);
-        if (gotNotAllUsers(like)) {
+        if (notAllUsersGot(like)) {
             like = getAll(itemId, step, like);
         }
         return like;
     }
 
-    private boolean gotNotAllUsers(Like like) {
+    private boolean notAllUsersGot(Like like) {
         return like != null && like.count != null && like.count > like.users.length;
     }
 
@@ -132,9 +136,13 @@ public class Likes {
             return null;
         }
         
-        JsonObject result = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
-        if (result != null) {
-            like = gson.fromJson(result.getAsJsonObject("response"), Like.class);
+        try {
+            JsonObject result = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
+            if (result != null) {
+                like = gson.fromJson(result.getAsJsonObject("response"), Like.class);
+            }
+        } catch (JsonSyntaxException | JsonIOException e) {
+            logger.error("error", e);
         }
         return like;
     }

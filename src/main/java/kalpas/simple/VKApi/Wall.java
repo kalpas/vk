@@ -2,7 +2,6 @@ package kalpas.simple.VKApi;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -44,18 +43,24 @@ public class Wall {
 
     private Map<String, String>  params        = new HashMap<>();
 
+    private Integer              count;
+
     @Inject
     public Wall(VKClient client) {
         this.client = client;
     }
 
-    public Map.Entry<Integer, List<WallPost>> get(String ownerId) {
+
+    public List<WallPost> get(String ownerId) {
         List<WallPost> wallPosts = new ArrayList<>();
         int wallPostsCount = MAX_GET_COUNT;
 
         params.put("count", MAX_GET_COUNT.toString());
         params.put("offset", "0");
         wallPostsCount = get(ownerId, wallPosts);
+        if (count != null && count != 0) {
+            wallPostsCount = count;
+        }
 
         List<VKAsyncResult> futures = new ArrayList<>();
         for (Integer step = MAX_GET_COUNT; step < wallPostsCount; step += MAX_GET_COUNT) {
@@ -77,7 +82,7 @@ public class Wall {
             }
         }
 
-        return new AbstractMap.SimpleEntry<Integer, List<WallPost>>(wallPostsCount, wallPosts);
+        return wallPosts;
 
     }
 
@@ -119,6 +124,11 @@ public class Wall {
 
     public Wall extended() {
         params.put("extended", "1");
+        return this;
+    }
+
+    public Wall addCount(int count) {
+        this.count = count;
         return this;
     }
 

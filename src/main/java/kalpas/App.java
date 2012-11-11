@@ -1,16 +1,16 @@
 package kalpas;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import kalpas.simple.DO.Comment;
 import kalpas.simple.DO.WallPost;
 import kalpas.simple.VKApi.Friends;
 import kalpas.simple.VKApi.Likes;
 import kalpas.simple.VKApi.Wall;
+import kalpas.simple.VKApi.WallComments;
 import kalpas.simple.helper.HttpClientContainer;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.google.inject.Guice;
@@ -32,27 +32,25 @@ public class App {
         HttpClientContainer container = null;
         try {
             BasicConfigurator.configure();
-            Logger.getLogger("org.apache").setLevel(Level.FATAL);
+            // Logger.getLogger("org.apache").setLevel(Level.FATAL);
 
             injector = Guice.createInjector(new VKModule());
             container = injector.getInstance(HttpClientContainer.class);
-            Wall wall = injector.getInstance(Wall.class);
+            Wall wall = injector.getInstance(Wall.class).addCount(200);
+            WallComments wallComments = injector.getInstance(WallComments.class);
             Likes likes = injector.getInstance(Likes.class).addType("post");
-            List<WallPost> posts = wall.get("-26599838").getValue();// -26599838
-            List<Integer> lenghts = new ArrayList<>();
+            List<WallPost> posts = wall.get("-26599838");// -26599838
+            List<Comment> comments = wallComments.get(posts.get(0).to_id, posts.get(0).id);
             logger.debug("start");
-            // for (WallPost post : posts) {
-            // post.likes = likes.get(post.to_id, post.id);
-            // lenghts.add(Integer.valueOf(post.likes.users.length));
-            // }
+            wallComments.get(posts.subList(0, 200));
             // logger.debug("end");
             // for (WallPost post : posts) {
             // post.likes = null;
             // }
             logger.debug("start");
-            likes.get(posts);
+            // likes.get(posts);
             logger.debug("end");
-            
+
             // for(int i = 0; i < posts.size();i++ ){
             // assertEquals(posts.get(i).likes.users.length,
             // likes.get(posts.get(i).to_id, posts.get(i).id).users.length);
