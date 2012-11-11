@@ -114,43 +114,34 @@ public class AuthHelper {
 
     public String getAccessToken() {
         if (accessToken == null) {
-            logger.fatal("getAccessToken waiting " + Thread.currentThread());
             synchronized (AuthHelper.class) {
                 if (accessToken == null) {
-                    logger.fatal("getAccessToken entered " + Thread.currentThread());
                     this.auth();
                 }
             }
         }
-        logger.fatal("getAccessToken returned " + Thread.currentThread());
         return accessToken;
     }
 
     public String getSecret() {
         if (secret == null) {
-            logger.fatal("getSecret waiting " + Thread.currentThread());
             synchronized (AuthHelper.class) {
                 if (secret == null) {
-                    logger.fatal("getSecret entered " + Thread.currentThread());
                     this.auth();
                 }
             }
         }
-        logger.fatal("getSecret returned " + Thread.currentThread());
         return secret;
     }
 
     public String getSelfUid() {
         if (selfUid == null) {
-            logger.fatal("getSelfUid waiting " + Thread.currentThread());
             synchronized (AuthHelper.class) {
                 if (selfUid == null) {
-                    logger.fatal("getSelfUid entered" + Thread.currentThread());
                     this.auth();
                 }
             }
         }
-        logger.fatal("getSelfUid returned " + Thread.currentThread());
         return selfUid;
     }
 

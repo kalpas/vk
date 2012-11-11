@@ -2,11 +2,17 @@ package kalpas.simple.VKApi;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import kalpas.simple.DO.Like;
+import kalpas.simple.DO.WallPost;
 import kalpas.simple.VKApi.client.VKClient;
+import kalpas.simple.VKApi.client.VKClient.VKAsyncResult;
 
 import org.apache.log4j.Logger;
 
@@ -42,21 +48,94 @@ public class Likes {
         params.put("owner_id", ownerId);
         return get(itemId);
     }
+    
+    public void get(List<WallPost> posts) {
+        Integer step = "1".equals(params.get("friends_only")) ? 100:1000;
+        params.put("count", step.toString());
+        
+        Map<WallPost, VKAsyncResult> futures = new HashMap<>();
+        
+        for (WallPost post : posts) {
+            params.put("owner_id", post.to_id);
+            futures.put(post, client.sendAsync(get + "?" + buildRequest(post.id)));
+        }
+        
+        Like like;
+        VKAsyncResult result;
+        Map.Entry<WallPost, VKAsyncResult> entry;
+        Iterator<Map.Entry<WallPost, VKAsyncResult>> iteartor;
 
-    public Like get(String itemId) {
-        params.put("count", "1".equals(params.get("friends_only")) ? "100" : "1000");
-
-        Like like = null;
-        InputStream stream = client.send(get + "?" + buildRequest(itemId));
-        JsonObject result = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
-        if (result != null) {
-
-            like = gson.fromJson(result.getAsJsonObject("response"), Like.class);
-            if (!like.count.equals(like.users.length)) {
-                logger.fatal("not implemented yet");
+        while(!futures.isEmpty()){
+            iteartor = futures.entrySet().iterator();
+            while (iteartor.hasNext()) {
+                entry = iteartor.next();
+                result = entry.getValue();
+                if (!result.isDone()) {
+                    continue;
+                }
+                iteartor.remove();
+                like = getChunk(result.get());
+                entry.getKey().likes = like;
             }
         }
 
+        Like likes;
+        for (WallPost post : posts) {
+            likes = post.likes;
+            if (gotNotAllUsers(likes)) {
+                getAll(post.id, step, likes);
+            }
+        }
+
+    }
+
+    public Like get(String itemId) {
+        Integer step = "1".equals(params.get("friends_only")) ? 100:1000;
+        params.put("count", step.toString());
+
+        InputStream stream = client.send(get + "?" + buildRequest(itemId));
+        Like like = get(itemId, step, stream);
+
+        return like;
+    }
+
+    private Like get(String itemId, Integer step, InputStream stream) {
+        Like like = getChunk(stream);
+        if (gotNotAllUsers(like)) {
+            like = getAll(itemId, step, like);
+        }
+        return like;
+    }
+
+    private boolean gotNotAllUsers(Like like) {
+        return like != null && like.count != null && like.count > like.users.length;
+    }
+
+    private Like getAll(String itemId, Integer step, Like like) {
+        InputStream stream;
+        List<Integer> usersLike = new ArrayList<>();
+        usersLike.addAll(Arrays.asList(like.users));
+        for (Integer offset = step; offset < like.count; offset += step) {
+            params.put("offset", offset.toString());
+            stream = client.send(get + "?" + buildRequest(itemId));
+            like = getChunk(stream);
+            usersLike.addAll(Arrays.asList(like.users));
+        }
+        like.users = usersLike.toArray(new Integer[0]);
+        return like;
+    }
+
+    private Like getChunk(InputStream stream) {
+        Like like = null;
+        if( stream == null){
+            logger.fatal("stream was null");
+            return null;
+        }
+        
+        JsonObject result = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
+        if (result != null) {
+            like = gson.fromJson(result.getAsJsonObject("response"), Like.class);
+        }
         return like;
     }
 

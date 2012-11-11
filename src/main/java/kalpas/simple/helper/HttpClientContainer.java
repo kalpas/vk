@@ -40,7 +40,8 @@ public class HttpClientContainer {
             try {
                 ConnectingIOReactor reactor = new DefaultConnectingIOReactor();
                 PoolingClientAsyncConnectionManager manager = new PoolingClientAsyncConnectionManager(reactor);
-                manager.setMaxTotal(200);
+                manager.setDefaultMaxPerRoute(400);
+                manager.setMaxTotal(400);
                 asyncInstance = new DefaultHttpAsyncClient(manager);
                 asyncInstance.start();
             } catch (IOReactorException e) {

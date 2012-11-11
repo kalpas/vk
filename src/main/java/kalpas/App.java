@@ -1,13 +1,11 @@
 package kalpas;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import kalpas.simple.DO.User;
 import kalpas.simple.DO.WallPost;
 import kalpas.simple.VKApi.Friends;
 import kalpas.simple.VKApi.Likes;
-import kalpas.simple.VKApi.Users;
 import kalpas.simple.VKApi.Wall;
 import kalpas.simple.helper.HttpClientContainer;
 
@@ -40,25 +38,46 @@ public class App {
             container = injector.getInstance(HttpClientContainer.class);
             Wall wall = injector.getInstance(Wall.class);
             Likes likes = injector.getInstance(Likes.class).addType("post");
-            List<WallPost> posts = wall.get("1080446").getValue();
-            for (WallPost post : posts) {
-                post.likes = likes.get(post.to_id, post.id);
-            }
+            List<WallPost> posts = wall.get("-26599838").getValue();// -26599838
+            List<Integer> lenghts = new ArrayList<>();
+            logger.debug("start");
+            // for (WallPost post : posts) {
+            // post.likes = likes.get(post.to_id, post.id);
+            // lenghts.add(Integer.valueOf(post.likes.users.length));
+            // }
+            // logger.debug("end");
+            // for (WallPost post : posts) {
+            // post.likes = null;
+            // }
+            logger.debug("start");
+            likes.get(posts);
+            logger.debug("end");
+            
+            // for(int i = 0; i < posts.size();i++ ){
+            // assertEquals(posts.get(i).likes.users.length,
+            // likes.get(posts.get(i).to_id, posts.get(i).id).users.length);
+            // }
 
-            friends = injector.getInstance(Friends.class);
-            List<User> myFriends = friends.get("1080446");
-            Users users = injector.getInstance(Users.class).addFields("uid", "first_name", "last_name", "nickname",
-                    "screen_name", "sex", "bdate", "city", "country", "timezone", "photo", "photo_medium", "photo_big",
-                    "has_mobile", "contacts", "education", "online", "counters", "lists", "can_post",
-                    "can_see_all_posts", "activity", "last_seen", "relation", "exports", "wall_comments",
-                    "connections", "interests", "movies", "tv", "books", "games", "about", "domain");
-            myFriends = users.get(myFriends);
-            User me = users.get("1080446");
-            me = users.get(me);
-            List<User> test = users.batchGet("1080446");
-            List<User> test2 = users.batchGet(myFriends);
+            // friends = injector.getInstance(Friends.class);
+            // List<User> myFriends = friends.get("1080446");
+            // Users users = injector.getInstance(Users.class).addFields("uid",
+            // "first_name", "last_name", "nickname",
+            // "screen_name", "sex", "bdate", "city", "country", "timezone",
+            // "photo", "photo_medium", "photo_big",
+            // "has_mobile", "contacts", "education", "online", "counters",
+            // "lists", "can_post",
+            // "can_see_all_posts", "activity", "last_seen", "relation",
+            // "exports", "wall_comments",
+            // "connections", "interests", "movies", "tv", "books", "games",
+            // "about", "domain");
+            // myFriends = users.get(myFriends);
+            // User me = users.get("1080446");
+            // me = users.get(me);
+            // List<User> test = users.batchGet("1080446");
+            // List<User> test2 = users.batchGet(myFriends);
+            //
+            // Map<User, List<User>> allFriends = friends.get(myFriends);
 
-            Map<User, List<User>> allFriends = friends.get(myFriends);
             // GMLHelper gmlWriter = new GMLHelper();
             // FriendsGraph graph = new FriendsGraph();
             // graph.addInterconnections(allFriends);

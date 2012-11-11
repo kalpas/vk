@@ -33,6 +33,10 @@ public abstract class VKClient {
 
     protected InputStream handleResponseInternal(HttpResponse response) {
 
+        if (response == null) {
+            logger.fatal("null http response");
+            return null;
+        }
         HttpEntity entity = response.getEntity();
         InputStream stream = null;
         if (entity != null) {
