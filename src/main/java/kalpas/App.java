@@ -48,7 +48,7 @@ public class App {
             NewFriendsGraph graph = injector.getInstance(NewFriendsGraph.class);
             graph.getMyFriends();
             GMLHelper helper = new GMLHelper();
-            // helper.writeToFile("out/gml/test", graph.edges.asMap());
+            helper.writeToFile("out/gml/mileStone", graph.edges.asMap());
             
 
 

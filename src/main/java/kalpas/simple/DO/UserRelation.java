@@ -7,7 +7,7 @@ public class UserRelation {
 
     public User user;
     
-    public Map<User, RelationCounters> relations = new HashMap<>();
+    public Map<String, RelationCounters> relations = new HashMap<>();
 
     public UserRelation(User user) {
         this.user = user;
