@@ -2,12 +2,16 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>kalpas</groupId>
-    <artifactId>VK</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>VKCore</artifactId>
     <packaging>jar</packaging>
+    
+     <parent>
+        <groupId>kalpas</groupId>
+        <artifactId>VK</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
-    <name>VK</name>
+    <name>VKCore</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -17,6 +21,17 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
@@ -25,7 +40,7 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-            <plugin>
+             <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.0</version>
@@ -45,12 +60,17 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin> -->
         </plugins>
     </build>
 
 
     <dependencies>
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>swt</artifactId>
+            <version>4.2.1-win32-win32-x86_64</version>
+        </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -60,11 +80,6 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>13.0.1</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -115,6 +130,11 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava-gwt</artifactId>
+            <version>14.0-rc1</version>
         </dependency>
     </dependencies>
 </project>

@@ -8,7 +8,7 @@ import java.util.Map;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import kalpas.simple.DO.User;
+import kalpas.VKCore.simple.DO.User;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;

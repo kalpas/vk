@@ -1,9 +1,9 @@
-package kalpas;
+package kalpas.VKCore;
 
-import kalpas.simple.DO.NewFriendsGraph;
-import kalpas.simple.VKApi.Friends;
-import kalpas.simple.helper.GMLHelper;
-import kalpas.simple.helper.HttpClientContainer;
+import kalpas.VKCore.simple.DO.NewFriendsGraph;
+import kalpas.VKCore.simple.VKApi.Friends;
+import kalpas.VKCore.simple.helper.GMLHelper;
+import kalpas.VKCore.simple.helper.HttpClientContainer;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
