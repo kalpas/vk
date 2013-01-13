@@ -28,14 +28,14 @@ import com.google.inject.Inject;
 
 public class Users {
 
-    private static final String    requstName   = "users.get";
+    private static final String    requstName     = "users.get";
 
-    private final List<String>     allowedCases = Arrays.asList("nom", "gen", "dat", "acc", "ins", "abl");
+    private final List<String>     allowedCases   = Arrays.asList("nom", "gen", "dat", "acc", "ins", "abl");
 
     @Inject
     private MapJoiner              joiner;
 
-    protected Logger               logger       = Logger.getLogger(Users.class);
+    protected Logger               logger         = Logger.getLogger(Users.class);
 
     protected VKClient             client;
 
@@ -44,32 +44,34 @@ public class Users {
     @Inject
     private JsonParser             parser;
 
-    protected Map<String, String>  params       = new HashMap<>();
 
-    private Function<User, String> getUid       = new Function<User, String>() {
-                                                    @Override
-                                                    public String apply(User input) {
-                                                        return input.uid;
-                                                    }
-                                                };
+    private Function<User, String> getUid         = new Function<User, String>() {
+                                                      @Override
+                                                      public String apply(User input) {
+                                                          return input.uid;
+                                                      }
+                                                  };
+
+    public final static String[]   ALL_FIELDS     = { "uid", "first_name", "last_name", "nickname", "screen_name",
+            "sex", "bdate", "city", "country", "timezone", "photo", "photo_medium", "photo_big", "has_mobile",
+            "contacts", "education", "online", "counters", "lists", "can_post", "can_see_all_posts", "activity",
+            "last_seen", "relation", "exports", "wall_comments", "connections", "interests", "movies", "tv", "books",
+            "games", "about", "domain"           };
+
+    public final static String[]   DEFAULT_FIELDS = { "uid", "first_name", "last_name", "sex" };
 
     @Inject
     public Users(VKClient vkClient) {
         this.client = vkClient;
-        this.addFields("uid", "first_name", "last_name", "nickname", "screen_name", "sex", "bdate", "city", "country",
-                "timezone", "photo", "photo_medium", "photo_big", "has_mobile", "contacts", "education", "online",
-                "counters", "lists", "can_post", "can_see_all_posts", "activity", "last_seen", "relation", "exports",
-                "wall_comments", "connections", "interests", "movies", "tv", "books", "games", "about", "domain");
     }
 
     public User get(String uid) {
-        User user = new User();
-        user.uid = uid;
+        User user = new User(uid);
         return get(user);
     }
 
     public User get(User user) {
-        InputStream stream = client.send(requstName + "?" + buildRequest(user.uid));
+        InputStream stream = client.send(buildRequest(user.uid));
         user = getUsers(stream).get(0);
         return user;
     }
@@ -77,7 +79,7 @@ public class Users {
     public List<User> get(List<User> users) {
         Map<User, VKAsyncResult> futures = new HashMap<User, VKClient.VKAsyncResult>();
         for (User user : users) {
-            futures.put(user, client.sendAsync(requstName + "?" + buildRequest(user.uid)));
+            futures.put(user, client.sendAsync(buildRequest(user.uid)));
         }
 
         users = new ArrayList<>();
@@ -105,7 +107,7 @@ public class Users {
         }
 
         String uids = Joiner.on(",").skipNulls().join(Iterables.transform(users, getUid));
-        InputStream stream = client.send(requstName + "?" + buildRequest(uids));
+        InputStream stream = client.send(buildRequest(uids));
 
         return getUsers(stream);
     }
@@ -115,7 +117,7 @@ public class Users {
             throw new IllegalArgumentException("amount shouldn't exceed 1000 per call");
         }
 
-        InputStream stream = client.send(requstName + "?" + buildRequest(Joiner.on(",").skipNulls().join(uids)));
+        InputStream stream = client.send(buildRequest(Joiner.on(",").skipNulls().join(uids)));
         return getUsers(stream);
     }
 
@@ -146,17 +148,23 @@ public class Users {
     // ********************** REQUEST BUILDING **********************
 
     protected String buildRequest(String uid) {
-        params.put("uids", uid);
-        return joiner.join(params);
-
+        return buildRequest(uid, DEFAULT_FIELDS);
     }
 
+    protected String buildRequest(String uid, String[] fields) {
+        Map<String, String> params = new HashMap<>();
+        params.put("uids", uid);
+        params.put("fields", Joiner.on(",").skipNulls().join(fields));
+        return requstName + "?" + joiner.join(params);
+    }
+
+    @Deprecated
     public Users addFields(String... fields) {
         if (fields.length == 0) {
             throw new IllegalArgumentException("should pass at least one field name");
         }
 
-        params.put("fields", Joiner.on(",").skipNulls().join(fields));
+        // params.put("fields", Joiner.on(",").skipNulls().join(fields));
         return this;
     }
 
@@ -166,12 +174,13 @@ public class Users {
      *            could be one of "nom", "gen", "dat", "acc", "ins", "abl"
      * @return
      */
+    @Deprecated
     public Users addNameCase(String nameCase) {
         if (!allowedCases.contains(nameCase)) {
             throw new IllegalArgumentException(nameCase + " nameCase is illegal");
         }
 
-        params.put("name_case", nameCase);
+        // params.put("name_case", nameCase);
         return this;
     }
 
