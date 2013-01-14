@@ -23,6 +23,7 @@ public class MultiMapTest {
         Multimap<String, String> map = ArrayListMultimap.create();
 
         map.put("fuits", "apple");
+        map.put("fuits", "apple");
         map.put("fuits", "orange");
         map.put("fuits", "bannana");
         map.put("vegetables", "carrot");

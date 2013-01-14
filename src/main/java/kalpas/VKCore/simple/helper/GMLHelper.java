@@ -13,11 +13,13 @@ import kalpas.VKCore.simple.DO.UserRelation;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 
+import com.google.common.collect.Multimap;
+
 public class GMLHelper {
 
-    private Logger logger = Logger.getLogger(GMLHelper.class);
+    private static Logger logger = Logger.getLogger(GMLHelper.class);
 
-    public void writeToFile(String fileName, Map<UserRelation, Collection<User>> edges) {
+    public static void writeToFile(String fileName, Map<UserRelation, Collection<User>> edges) {
         BufferedWriter bw = null;
         try {
             bw = new BufferedWriter(new FileWriter(new File(fileName + new DateTime().getMillis() + ".gml"), true));
@@ -56,6 +58,54 @@ public class GMLHelper {
                     bw.write("\t\tcomments " + key.relations.get(user.uid).comments);
                     bw.newLine();
                     bw.write("\t\tposts " + key.relations.get(user.uid).wallPosts);
+                    bw.newLine();
+                    bw.write("\t]");
+                    bw.newLine();
+                }
+            }
+            bw.write("]");
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            logger.error("IO exception", e);
+        } finally {
+            try {
+                bw.close();
+            } catch (Exception e) {
+            }
+        }
+        return;
+    }
+
+    public static void writeToFile(String fileName, Multimap<User, User> multimap) {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(new File(fileName + new DateTime().getMillis() + ".gml"), true));
+            bw.write("graph [");
+            bw.newLine();
+            bw.write("\tdirected 1");
+            bw.newLine();
+            bw.write("\tid 1");
+            bw.newLine();
+            for (User node : multimap.keySet()) {
+                bw.write("\tnode [");
+                bw.newLine();
+                bw.write("\t\tid " + node.uid);
+                bw.newLine();
+                bw.write("\t\tlabel \"" + node.first_name + " " + node.last_name + "\"");
+                bw.newLine();
+                bw.write("\t\tsex " + node.sex);
+                bw.newLine();
+                bw.write("\t]");
+                bw.newLine();
+            }
+            for (User user : multimap.keySet()) {
+                for (User friend : multimap.get(user)) {
+                    bw.write("\tedge [");
+                    bw.newLine();
+                    bw.write("\t\tsource " + user.uid);
+                    bw.newLine();
+                    bw.write("\t\ttarget " + friend.uid);
                     bw.newLine();
                     bw.write("\t]");
                     bw.newLine();

@@ -1,7 +1,7 @@
 package kalpas.VKCore.simple.VKApi;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,7 +12,6 @@ import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import com.google.common.base.Joiner.MapJoiner;
@@ -79,15 +78,7 @@ public class Groups {
     private Response parseInputStream(InputStream stream) {
         Response response = null;
         try {
-            String text = null;
-            try {
-                text = IOUtils.toString(stream);
-            } catch (IOException e) {
-            }
-            logger.debug(text);
-            response = gson.fromJson(text, Response.class);
-            // response = gson.fromJson(new InputStreamReader(stream),
-            // Response.class);
+            response = gson.fromJson(new InputStreamReader(stream), Response.class);
         } catch (JsonIOException | JsonSyntaxException e) {
             logger.error("parsing failed", e);
         }

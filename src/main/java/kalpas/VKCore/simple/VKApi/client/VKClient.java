@@ -69,6 +69,8 @@ public abstract class VKClient {
                 logger.error("interrupted", e);
             } catch (ExecutionException e) {
                 logger.error("exec exception", e);
+            } catch (Exception e) {
+                logger.fatal("SMTH REALLLY BAD HAPPENED", e);
             }
             return result;
         }

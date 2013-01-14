@@ -15,7 +15,6 @@ import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -46,8 +45,6 @@ public class Friends {
 
     private VKClient            client;
 
-    private Map<String, String> params          = new HashMap<>();
-
     @Inject
     public Friends(VKClient vkClient) {
         this.client = vkClient;
@@ -56,7 +53,7 @@ public class Friends {
     public List<User> get(String uid) {
 
         List<User> friendsList = null;
-        InputStream stream = client.send(get + "?" + buildRequest(uid));
+        InputStream stream = client.send(buildRequest(uid));
         try {
             JsonObject response = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
             JsonArray friends = response.getAsJsonArray("response");
@@ -76,7 +73,7 @@ public class Friends {
         Map<User, List<User>> friendsMap = new HashMap<User, List<User>>();
         Map<User, VKAsyncResult> futures = new HashMap<User, VKClient.VKAsyncResult>();
         for (User friend : friends) {
-            futures.put(friend, client.sendAsync(get + "?" + buildRequest(friend.uid)));
+            futures.put(friend, client.sendAsync(buildRequest(friend.uid)));
         }
 
         process(friendsMap, futures);
@@ -134,25 +131,29 @@ public class Friends {
     }
 
     private String buildRequest(String uid) {
+        Map<String, String> params = new HashMap<>();
         params.put("uid", uid);
-        return joiner.join(params);
+        return get + "?" + joiner.join(params);
 
     }
 
     // *************** SETTERS *************** //
 
+    @Deprecated
     public Friends addCount(Integer count) {
-        params.put("count", count.toString());
+        // params.put("count", count.toString());
         return this;
     }
 
+    @Deprecated
     public Friends addOffset(Integer offset) {
-        params.put("offset", offset.toString());
+        // params.put("offset", offset.toString());
         return this;
     }
 
+    @Deprecated
     public Friends addLid(String lid) {
-        params.put("lid", lid);
+        // params.put("lid", lid);
         return this;
     }
 
@@ -162,21 +163,23 @@ public class Friends {
      *            could be "name", "hints"
      * @return
      */
+    @Deprecated
     public Friends addOrder(String order) {
         if (allowedOrdering.contains(order)) {
             throw new IllegalArgumentException(order + "order is illegal");
         }
 
-        params.put("order", order);
+        // params.put("order", order);
         return this;
     }
 
+    @Deprecated
     public Friends addFields(String... fields) {
         if (fields.length == 0) {
             throw new IllegalArgumentException("should pass at least one field name");
         }
 
-        params.put("fields", Joiner.on(",").skipNulls().join(fields));
+        // params.put("fields", Joiner.on(",").skipNulls().join(fields));
         return this;
     }
 
@@ -186,12 +189,13 @@ public class Friends {
      *            could be one of "nom", "gen", "dat", "acc", "ins", "abl"
      * @return
      */
+    @Deprecated
     public Friends addNameCase(String nameCase) {
         if (!allowedCases.contains(nameCase)) {
             throw new IllegalArgumentException(nameCase + " nameCase is illegal");
         }
 
-        params.put("name_case", nameCase);
+        // params.put("name_case", nameCase);
         return this;
     }
 }
