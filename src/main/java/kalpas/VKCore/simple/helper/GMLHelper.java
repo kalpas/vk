@@ -6,18 +6,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.DO.UserRelation;
 
-import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 
 import com.google.common.collect.Multimap;
 
 public class GMLHelper {
 
-    private static Logger logger = Logger.getLogger(GMLHelper.class);
+    private static Logger logger = LogManager.getLogger(GMLHelper.class);
 
     public static void writeToFile(String fileName, Map<UserRelation, Collection<User>> edges) {
         BufferedWriter bw = null;
@@ -101,6 +102,10 @@ public class GMLHelper {
             }
             for (User user : multimap.keySet()) {
                 for (User friend : multimap.get(user)) {
+                    if (friend == null) {
+                        continue;
+                    }
+
                     bw.write("\tedge [");
                     bw.newLine();
                     bw.write("\t\tsource " + user.uid);

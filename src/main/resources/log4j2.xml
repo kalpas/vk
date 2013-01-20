@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appenders>
+        <File name="VK" fileName="vk.log" append="false">
+            <PatternLayout pattern="%t %-5p %c{2} - %m%xEx%n" />
+        </File>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %-5p [%t] %C{2} (%F:%L) - %m%xEx%n" />
+        </Console>
+    </appenders>
+    <loggers>
+        <logger name="org.apache.http" level="error" />
+        <root level="debug">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="VK" />
+        </root>
+    </loggers>
+</configuration>

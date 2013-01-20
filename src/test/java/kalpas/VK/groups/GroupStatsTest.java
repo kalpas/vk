@@ -14,6 +14,7 @@ import com.google.common.collect.Multimap;
 
 public class GroupStatsTest extends BaseApiTest {
 
+    private static final String purpur = "46944152";
     private GroupStats stats;
 
     @Before
@@ -28,7 +29,7 @@ public class GroupStatsTest extends BaseApiTest {
 
     @Test
     public void groupStats_getMemberNet_hp() {
-        Multimap<User, User> multimap = stats.getMemberNetwork("46944152");
+        Multimap<User, User> multimap = stats.getMemberNetwork("45435572");
 
         assertNotNull(multimap);
         

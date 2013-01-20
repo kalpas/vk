@@ -7,13 +7,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.Comment;
 import kalpas.VKCore.simple.DO.WallPost;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
-
-import org.apache.log4j.Logger;
 
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
@@ -34,7 +34,7 @@ public class WallComments {
     @Inject
     private JsonParser           parser;
 
-    private Logger               logger       = Logger.getLogger(WallComments.class);
+    private Logger               logger       = LogManager.getLogger(WallComments.class);
     private VKClient             client;
 
     private static final String  get          = "wall.getComments";

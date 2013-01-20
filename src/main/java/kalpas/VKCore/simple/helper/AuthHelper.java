@@ -1,9 +1,10 @@
 package kalpas.VKCore.simple.helper;
 
 import java.net.URISyntaxException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
@@ -21,7 +22,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class AuthHelper {
 
-    private final Logger  logger = Logger.getLogger(AuthHelper.class);
+    private final Logger  logger = LogManager.getLogger(AuthHelper.class);
 
     private final String  auth   = "oauth.vk.com";
     private final String  appId  = "3164748";

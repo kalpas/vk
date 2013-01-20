@@ -1,7 +1,8 @@
 package kalpas.VK;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.XMLConfigurationFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -10,11 +11,13 @@ import com.google.common.collect.Multimap;
 
 public class MultiMapTest {
 
-    private static final Logger logger = Logger.getLogger(MultiMapTest.class);
+    private static final Logger logger = LogManager.getLogger(MultiMapTest.class);
 
     @BeforeClass
     public static void before() {
-        BasicConfigurator.configure();
+        // BasicConfigurator.configure();
+        System.setProperty(XMLConfigurationFactory.CONFIGURATION_FILE_PROPERTY, "log4j2-test.xml");
+
     }
 
 

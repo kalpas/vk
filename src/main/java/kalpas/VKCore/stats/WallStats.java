@@ -3,6 +3,8 @@ package kalpas.VKCore.stats;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.DO.WallPost;
@@ -11,8 +13,6 @@ import kalpas.VKCore.simple.VKApi.Likes;
 import kalpas.VKCore.simple.VKApi.Users;
 import kalpas.VKCore.simple.VKApi.Wall;
 import kalpas.VKCore.simple.VKApi.WallComments;
-
-import org.apache.log4j.Logger;
 
 import com.google.inject.Inject;
 
@@ -29,7 +29,7 @@ public class WallStats {
     @Inject
     private WallComments WALLCOMMENTS;
 
-    Logger               logger = Logger.getLogger(WallStats.class);
+    Logger               logger = LogManager.getLogger(WallStats.class);
 
     private User   user;
 

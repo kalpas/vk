@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
-
-import org.apache.log4j.Logger;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -35,7 +35,7 @@ public class Users {
     @Inject
     private MapJoiner              joiner;
 
-    protected Logger               logger         = Logger.getLogger(Users.class);
+    protected Logger               logger         = LogManager.getLogger(Users.class);
 
     protected VKClient             client;
 
@@ -43,7 +43,6 @@ public class Users {
     private Gson                   gson;
     @Inject
     private JsonParser             parser;
-
 
     private Function<User, String> getUid         = new Function<User, String>() {
                                                       @Override
@@ -94,8 +93,12 @@ public class Users {
                     continue;
                 }
                 iterator.remove();
-                user = getUsers(entry.getValue().get()).get(0);
-                users.add(user);
+                // FIXME smells from somewhere here
+                List<User> result = getUsers(entry.getValue().get());
+                if (!result.isEmpty()) {
+                    user = result.get(0);
+                    users.add(user);
+                }
             }
         }
         return users;
@@ -125,7 +128,16 @@ public class Users {
 
     private List<User> getUsers(InputStream stream) {
         List<User> users = new ArrayList<>();
-        JsonArray array = parser.parse(new InputStreamReader(stream)).getAsJsonObject().getAsJsonArray("response");
+        if (stream == null) {
+            return users;
+        }
+        JsonArray array = null;
+        // FIXME smells here i guess
+        try {
+            array = parser.parse(new InputStreamReader(stream)).getAsJsonObject().getAsJsonArray("response");
+        } catch (IllegalStateException e) {
+            logger.error("error parsing ", e);
+        }
         if (array != null) {
             Iterator<JsonElement> iterator = array.iterator();
             while (iterator.hasNext()) {

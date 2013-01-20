@@ -13,7 +13,8 @@ import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
@@ -36,7 +37,7 @@ public class Friends {
     @Inject
     private MapJoiner           joiner;
 
-    private Logger              logger          = Logger.getLogger(Friends.class);
+    private Logger              logger          = LogManager.getLogger(Friends.class);
 
     @Inject
     private Gson                gson;
@@ -57,6 +58,10 @@ public class Friends {
         try {
             JsonObject response = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
             JsonArray friends = response.getAsJsonArray("response");
+            if (friends == null) {// FIXME smells
+                return friendsList;
+            }
+
             friendsList = processArray(friends);
         } catch (JsonSyntaxException | JsonIOException e) {
             logger.error("exception while parsing json", e);
@@ -93,7 +98,11 @@ public class Friends {
                 if (entry.getValue().isDone()) {
                     iterator.remove();
                     try {
-                        JsonObject json = parser.parse(new InputStreamReader(entry.getValue().get())).getAsJsonObject();
+                        InputStream inputStream = entry.getValue().get();
+                        if(inputStream == null){
+                            continue;// FIXME smells. hot place
+                        }
+                        JsonObject json = parser.parse(new InputStreamReader(inputStream)).getAsJsonObject();
                         friends = json.getAsJsonArray("response");
                         if (friends != null) {
                             friendsList = processArray(friends);
@@ -111,7 +120,7 @@ public class Friends {
         List<User> users = new ArrayList<User>();
         User user;
         JsonElement element;
-        Iterator<JsonElement> iterator = array.iterator();
+        Iterator<JsonElement> iterator = array.iterator();// FIXME smells NPE
         while (iterator.hasNext()) {
             user = null;
             element = iterator.next();

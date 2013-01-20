@@ -4,8 +4,8 @@
 
     <artifactId>VKCore</artifactId>
     <packaging>jar</packaging>
-    
-     <parent>
+
+    <parent>
         <groupId>kalpas</groupId>
         <artifactId>VK</artifactId>
         <version>0.0.1-SNAPSHOT</version>
@@ -40,7 +40,7 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-             <!--<plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.0</version>
@@ -54,13 +54,13 @@
                             <transformers>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>kalpas.App</mainClass>
+                                    <mainClass>kalpas.VKCore.App</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin> -->
+            </plugin>
         </plugins>
     </build>
 
@@ -70,11 +70,7 @@
             <groupId>org.eclipse</groupId>
             <artifactId>swt</artifactId>
             <version>4.2.1-win32-win32-x86_64</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -135,6 +131,26 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava-gwt</artifactId>
             <version>14.0-rc1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.0-beta3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.0-beta3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j12-api</artifactId>
+            <version>2.0-alpha2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jcl</artifactId>
+            <version>2.0-alpha2</version>
         </dependency>
     </dependencies>
 </project>

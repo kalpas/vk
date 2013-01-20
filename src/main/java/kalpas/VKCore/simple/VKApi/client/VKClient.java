@@ -6,14 +6,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.log4j.Logger;
 
 public abstract class VKClient {
 
-    private Logger logger = Logger.getLogger(VKClient.class);
+    private Logger logger = LogManager.getLogger(VKClient.class);
 
     public InputStream send(String request) {
         return handleResponseInternal(sendInternal(request));
@@ -69,7 +70,7 @@ public abstract class VKClient {
                 logger.error("interrupted", e);
             } catch (ExecutionException e) {
                 logger.error("exec exception", e);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 logger.fatal("SMTH REALLLY BAD HAPPENED", e);
             }
             return result;
@@ -81,8 +82,7 @@ public abstract class VKClient {
         }
 
         @Override
-        public InputStream get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException,
-                TimeoutException {
+        public InputStream get(long timeout, TimeUnit unit) throws TimeoutException {
             InputStream result = null;
             try {
                 result = handleResponseInternal(future.get(timeout, unit));

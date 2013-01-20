@@ -1,5 +1,8 @@
 package kalpas.VKCore.simple.helper;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
@@ -11,14 +14,13 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
-import org.apache.log4j.Logger;
 
 import com.google.inject.Singleton;
 
 @Singleton
 public class HttpClientContainer {
 
-    private static Logger          logger = Logger.getLogger(HttpClientContainer.class);
+    private static Logger          logger = LogManager.getLogger(HttpClientContainer.class);
 
     private static HttpClient      instance;
 

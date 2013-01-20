@@ -1,14 +1,16 @@
 package kalpas.VKCore;
 
-import kalpas.VKCore.simple.DO.NewFriendsGraph;
+import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.Friends;
 import kalpas.VKCore.simple.helper.GMLHelper;
 import kalpas.VKCore.simple.helper.HttpClientContainer;
+import kalpas.VKCore.stats.GroupStats;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.XMLConfigurationFactory;
 
+import com.google.common.collect.Multimap;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -16,8 +18,10 @@ import com.google.inject.Injector;
  * Hello world!
  * 
  */
+
+// TODO timeout for socket operations
 public class App {
-    static private Logger logger = Logger.getLogger(App.class);
+    static private Logger logger = LogManager.getLogger(App.class);
 
     public static void main(String[] args) {
         // logger.info("Started");
@@ -27,8 +31,8 @@ public class App {
         Friends friends;
         HttpClientContainer container = null;
         try {
-            BasicConfigurator.configure();
-            Logger.getLogger("org.apache").setLevel(Level.FATAL);
+
+            System.setProperty(XMLConfigurationFactory.CONFIGURATION_FILE_PROPERTY, "log4j2.xml");
 
             injector = Guice.createInjector(new VKModule());
             container = injector.getInstance(HttpClientContainer.class);
@@ -45,10 +49,18 @@ public class App {
             // likes.get(posts);
             // logger.debug("end");
 
-            NewFriendsGraph graph = injector.getInstance(NewFriendsGraph.class);
-            graph.getMyFriends();
-            GMLHelper helper = new GMLHelper();
-            helper.writeToFile("out/gml/mileStone", graph.edges.asMap());
+            // NewFriendsGraph graph =
+            // injector.getInstance(NewFriendsGraph.class);
+            // graph.getMyFriends();
+            // GMLHelper helper = new GMLHelper();
+            // helper.writeToFile("out/gml/mileStone", graph.edges.asMap());
+
+            GroupStats stats = injector.getInstance(GroupStats.class);
+
+            String gid = "21642795";
+            Multimap<User, User> multimap = stats.getMemberNetwork("37194783");
+
+            GMLHelper.writeToFile("out\\gml\\" + App.class.toString(), multimap);
             
 
 

@@ -1,8 +1,8 @@
 package kalpas.VKCore.stats;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.Friends;
@@ -15,6 +15,8 @@ import com.google.inject.Inject;
 
 public class GroupStats {
     
+    private Logger  logger = LogManager.getLogger(GroupStats.class);
+
     @Inject
     private Groups groups;
 
@@ -26,22 +28,36 @@ public class GroupStats {
 
     public Multimap<User, User> getMemberNetwork(String gid) {
         List<User> members = groups.getMembers(gid);
+
+        logger.debug("members " + members.size());
+
         members = users.get(members);
-        Map<User, List<User>> result = friends.get(members);
-        
+
         Multimap<User, User> memberNetwork = ArrayListMultimap.<User, User> create();
-        Iterator<Map.Entry<User, List<User>>> iterator = result.entrySet().iterator();
-        Map.Entry<User, List<User>> entry = null;
-        List<User> friends = null;
-        while(iterator.hasNext()){
-            entry = iterator.next();
-            friends = entry.getValue();
-            for(User user : friends){
-                if(members.contains(user)){
-                    memberNetwork.put(entry.getKey(), user);
+
+        int progressCounter = 0;
+        for (User member : members) {
+            memberNetwork.put(member, null);
+            List<User> memberFriends = friends.get(member);// FIXME resturns
+                                                           // null. sucks.
+                                                           // better empty
+                                                           // collection. all
+                                                           // that not null
+                                                           // checks sucks
+            if (memberFriends == null) {
+                continue;
+            }
+            for (User friend : memberFriends) {
+                if (members.contains(friend)) {
+                    memberNetwork.put(member, friend);
                 }
             }
+            logger.info(progressCounter++ + " of " + members.size());
         }
+
+        logger.debug("keys " + memberNetwork.keys().size());
+        logger.debug("keySet " + memberNetwork.keySet().size());
+        logger.debug("values " + memberNetwork.values().size());
 
         return memberNetwork;
     }
