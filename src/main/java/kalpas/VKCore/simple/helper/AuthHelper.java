@@ -1,10 +1,10 @@
 package kalpas.VKCore.simple.helper;
 
 import java.net.URISyntaxException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
@@ -117,7 +117,7 @@ public class AuthHelper {
 
     public String getAccessToken() {
         if (accessToken == null) {
-            synchronized (AuthHelper.class) {
+            synchronized (this) {
                 if (accessToken == null) {
                     this.auth();
                 }
@@ -128,7 +128,7 @@ public class AuthHelper {
 
     public String getSecret() {
         if (secret == null) {
-            synchronized (AuthHelper.class) {
+            synchronized (this) {
                 if (secret == null) {
                     this.auth();
                 }
@@ -139,7 +139,7 @@ public class AuthHelper {
 
     public String getSelfUid() {
         if (selfUid == null) {
-            synchronized (AuthHelper.class) {
+            synchronized (this) {
                 if (selfUid == null) {
                     this.auth();
                 }

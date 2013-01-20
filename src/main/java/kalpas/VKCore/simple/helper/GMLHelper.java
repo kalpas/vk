@@ -6,13 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.DO.UserRelation;
 
-import org.joda.time.DateTime;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Multimap;
 
@@ -23,7 +22,7 @@ public class GMLHelper {
     public static void writeToFile(String fileName, Map<UserRelation, Collection<User>> edges) {
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new FileWriter(new File(fileName + new DateTime().getMillis() + ".gml"), true));
+            bw = new BufferedWriter(new FileWriter(new File(fileName + ".gml"), true));
             bw.write("graph [");
             bw.newLine();
             bw.write("\tdirected 1");
@@ -81,7 +80,7 @@ public class GMLHelper {
     public static void writeToFile(String fileName, Multimap<User, User> multimap) {
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new FileWriter(new File(fileName + new DateTime().getMillis() + ".gml"), true));
+            bw = new BufferedWriter(new FileWriter(new File(fileName + ".gml"), true));
             bw.write("graph [");
             bw.newLine();
             bw.write("\tdirected 1");

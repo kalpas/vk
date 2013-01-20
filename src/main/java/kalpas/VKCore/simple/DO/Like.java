@@ -9,6 +9,6 @@ public class Like {
 
     @Override
     public String toString() {
-        return count + " likes: " + users.toString();
+        return count + " likes" + (users == null ? "" : ": " + users);
     }
 }

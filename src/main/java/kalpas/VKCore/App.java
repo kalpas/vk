@@ -8,7 +8,6 @@ import kalpas.VKCore.stats.GroupStats;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.XMLConfigurationFactory;
 
 import com.google.common.collect.Multimap;
 import com.google.inject.Guice;
@@ -31,8 +30,6 @@ public class App {
         Friends friends;
         HttpClientContainer container = null;
         try {
-
-            System.setProperty(XMLConfigurationFactory.CONFIGURATION_FILE_PROPERTY, "log4j2.xml");
 
             injector = Guice.createInjector(new VKModule());
             container = injector.getInstance(HttpClientContainer.class);
@@ -58,7 +55,7 @@ public class App {
             GroupStats stats = injector.getInstance(GroupStats.class);
 
             String gid = "21642795";
-            Multimap<User, User> multimap = stats.getMemberNetwork("37194783");
+            Multimap<User, User> multimap = stats.getMemberNetwork("kubana_bel_tour");
 
             GMLHelper.writeToFile("out\\gml\\" + App.class.toString(), multimap);
             

@@ -20,7 +20,8 @@ public class WallPost {
 
     @Override
     public String toString() {
-        return text + "\n" + attachments.length + " attachements\n" + likes + "\n" + comments;
+        return text + "\n" + (attachments == null ? "" : attachments.length + " attachements\n") + likes + "\n"
+                + comments;
     }
 
     public class Attachment {
@@ -124,7 +125,7 @@ public class WallPost {
 
         @Override
         public String toString() {
-            return count + " comments:" + comments.toString();
+            return count + " comments" + (comments == null ? "" : ": " + comments);
         }
     }
 }

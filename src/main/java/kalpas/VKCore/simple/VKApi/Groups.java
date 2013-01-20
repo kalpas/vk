@@ -7,12 +7,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
@@ -52,7 +53,7 @@ public class Groups {
 
         if (response.response.count > max_count) {
             List<VKAsyncResult> futures = new ArrayList<>();
-            for (int offset = 1000; offset < response.response.count; offset += max_count) {
+            for (int offset = max_count; offset < response.response.count; offset += max_count) {
                 futures.add(client.sendAsync(buildRequest(gid, offset)));
             }
             processAsyncResults(members, futures);
