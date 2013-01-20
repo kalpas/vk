@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import kalpas.VKCore.simple.DO.Like;
-import kalpas.VKCore.simple.DO.VKException;
 import kalpas.VKCore.simple.DO.WallPost;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
@@ -59,42 +59,67 @@ public class Likes {
         post, comment, photo, audio, video, note, sitepage;
     }
 
-    public List<WallPost> getLikes(List<WallPost> list) {
-        return getLikes(list, false);
+    public void getLikes(List<WallPost> list) {
+        getLikes(list, false);
     }
 
-    public List<WallPost> getLikes(List<WallPost> list, boolean repostOnly) {
+    public void getLikes(List<WallPost> list, boolean repostOnly) {
 
-        // Map<WallPost, VKAsyncResult> futures = new HashMap<>();
-        // for (WallPost post : list) {
-        // futures.put(post, client.sendAsync(buildRequest(LikeObject.post,
-        // post.to_id, post.id, 0, repostOnly)));
-        // }
-        //
-        // Iterator<Map.Entry<WallPost, VKAsyncResult>>
-        // while()
-        //
-        return null;
+        Map<WallPost, VKAsyncResult> futures = new HashMap<>();
+        for (WallPost post : list) {
+            futures.put(post, client.sendAsync(buildRequest(LikeObject.post, post.to_id, post.id, 0, repostOnly)));
+        }
+
+        Like origin, result;
+        Map.Entry<WallPost, VKAsyncResult> entry;
+        Iterator<Map.Entry<WallPost, VKAsyncResult>> iterator;
+        Set<Map.Entry<WallPost, VKAsyncResult>> entrySet = futures.entrySet();
+        while (!entrySet.isEmpty()) {
+            iterator = entrySet.iterator();
+            while (iterator.hasNext()) {
+                entry = iterator.next();
+                if (!entry.getValue().isDone()) {
+                    continue;
+                }
+
+                iterator.remove();
+                origin = entry.getKey().likes;
+                result = parseLikes(entry.getValue().get());
+                origin.count = result.count;
+                origin.users = result.users;
+            }
+        }
+
+        for (WallPost post : list) {
+            if (post.likes.count > max_count) {
+                getRemaining(LikeObject.post, post.to_id, post.id, repostOnly, post.likes);
+            }
+        }
     }
 
-    public Like getLikes(LikeObject type, String ownerId, String itemId) throws VKException {
+    public Like getLikes(LikeObject type, String ownerId, String itemId) {
         return getLikes(type, ownerId, itemId, false);
     }
 
-    public Like getLikes(LikeObject type, String ownerId, String itemId, boolean repostOnly) throws VKException {
+    public Like getLikes(LikeObject type, String ownerId, String itemId, boolean repostOnly) {
         InputStream stream = client.send(buildRequest(type, ownerId, itemId, 0, repostOnly));
         Like like = parseLikes(stream);
 
         if (like.count > max_count) {
-            List<VKAsyncResult> futures = submitRequests4remaining(type, ownerId, itemId, repostOnly, like);
-            like.users = Arrays.copyOf(like.users, like.count);
-            like = processResponses(like, futures);
+            getRemaining(type, ownerId, itemId, repostOnly, like);
         }
 
         return like;
     }
 
-    private Like processResponses(Like like, List<VKAsyncResult> futures) throws VKException {
+    private void getRemaining(LikeObject type, String ownerId, String itemId, boolean repostOnly, Like like)
+ {
+        List<VKAsyncResult> futures = submitRequests4remaining(type, ownerId, itemId, repostOnly, like);
+        like.users = Arrays.copyOf(like.users, like.count);
+        processResponses(like, futures);
+    }
+
+    private void processResponses(Like like, List<VKAsyncResult> futures) {
         int offset = max_count;
         Like likeChunk = null;
         Iterator<VKAsyncResult> iterator;
@@ -114,8 +139,6 @@ public class Likes {
                 offset += likeChunk.users.length;
             }
         }
-
-        return like;
     }
 
     private List<VKAsyncResult> submitRequests4remaining(LikeObject type, String ownerId, String itemId,
@@ -128,17 +151,15 @@ public class Likes {
         return futures;
     }
 
-    private Like parseLikes(InputStream stream) throws VKException {
+    private Like parseLikes(InputStream stream) {
         Response response = null;
         try {
             response = gson.fromJson(new InputStreamReader(stream), Response.class);
             if (response.response == null) {
                 logger.error("response was null");
-                throw new VKException(null);
             }
         } catch (JsonIOException | JsonSyntaxException e) {
             logger.error("parsing failed", e);
-            throw new VKException(null);
         }
         return response.response;
     }
