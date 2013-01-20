@@ -17,6 +17,9 @@ public class WallPost {
     public Like         likes;
     public Media        media;
     public Comments     comments;
+    public String       copy_owner_id;
+    public String       copy_post_id;
+    public String       copy_text;
 
     @Override
     public String toString() {

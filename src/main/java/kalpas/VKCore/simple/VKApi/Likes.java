@@ -1,5 +1,7 @@
 package kalpas.VKCore.simple.VKApi;
 
+import static kalpas.VKCore.util.DebugUtils.traceResponse;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -8,13 +10,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.Like;
+import kalpas.VKCore.simple.DO.VKException;
 import kalpas.VKCore.simple.DO.WallPost;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
+import kalpas.VKCore.util.DebugUtils;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
@@ -26,31 +31,127 @@ import com.google.inject.Inject;
 
 public class Likes {
 
-    private Logger              logger = LogManager.getLogger(Likes.class);
+    private Logger               logger    = LogManager.getLogger(Likes.class);
 
-    private static final String get    = "likes.getList";
-    private VKClient            client;
+    private static final String  get       = "likes.getList";
+    private static final Integer max_count = 1000;
 
-    @Inject
-    private Gson                gson;
-    @Inject
-    private JsonParser          parser;
-
-    private Map<String, String> params = new HashMap<>();
+    private VKClient             client;
 
     @Inject
-    private MapJoiner           joiner;
+    private Gson                 gson;
+    @Inject
+    private JsonParser           parser;
+
+    @Deprecated
+    private Map<String, String>  params    = new HashMap<>();
+
+    @Inject
+    private MapJoiner            joiner;
 
     @Inject
     public Likes(VKClient client) {
         this.client = client;
     }
 
+    // *******************************************************************************
+    public enum LikeObject {
+        post, comment, photo, audio, video, note, sitepage;
+    }
+
+    public List<WallPost> getLikes(List<WallPost> list) {
+        return getLikes(list, false);
+    }
+
+    public List<WallPost> getLikes(List<WallPost> list, boolean repostOnly) {
+
+        // Map<WallPost, VKAsyncResult> futures = new HashMap<>();
+        // for (WallPost post : list) {
+        // futures.put(post, client.sendAsync(buildRequest(LikeObject.post,
+        // post.to_id, post.id, 0, repostOnly)));
+        // }
+        //
+        // Iterator<Map.Entry<WallPost, VKAsyncResult>>
+        // while()
+        //
+        return null;
+    }
+
+    public Like getLikes(LikeObject type, String ownerId, String itemId) throws VKException {
+        return getLikes(type, ownerId, itemId, false);
+    }
+
+    public Like getLikes(LikeObject type, String ownerId, String itemId, boolean repostOnly) throws VKException {
+        InputStream stream = client.send(buildRequest(type, ownerId, itemId, 0, repostOnly));
+        Like like = parseLikes(stream);
+
+        if (like.count > max_count) {
+            List<VKAsyncResult> futures = submitRequests4remaining(type, ownerId, itemId, repostOnly, like);
+            like.users = Arrays.copyOf(like.users, like.count);
+            like = processResponses(like, futures);
+        }
+
+        return like;
+    }
+
+    private Like processResponses(Like like, List<VKAsyncResult> futures) throws VKException {
+        int offset = max_count;
+        Like likeChunk = null;
+        Iterator<VKAsyncResult> iterator;
+        VKAsyncResult item;
+
+        while (!futures.isEmpty()) {
+            iterator = futures.iterator();
+            while (iterator.hasNext()) {
+                item = iterator.next();
+                if (!item.isDone()) {
+                    continue;
+                }
+
+                iterator.remove();
+                likeChunk = parseLikes(item.get());
+                System.arraycopy(likeChunk.users, 0, like.users, offset, likeChunk.users.length);
+                offset += likeChunk.users.length;
+            }
+        }
+
+        return like;
+    }
+
+    private List<VKAsyncResult> submitRequests4remaining(LikeObject type, String ownerId, String itemId,
+            boolean repostOnly, Like like) {
+        List<VKAsyncResult> futures = new ArrayList<>();
+        for (int offset = max_count; offset < like.count; offset += max_count) {
+            futures.add(client.sendAsync(DebugUtils
+                    .traceRequest(buildRequest(type, ownerId, itemId, offset, repostOnly))));
+        }
+        return futures;
+    }
+
+    private Like parseLikes(InputStream stream) throws VKException {
+        Response response = null;
+        try {
+            response = gson.fromJson(new InputStreamReader(stream), Response.class);
+            if (response.response == null) {
+                logger.error("response was null");
+                throw new VKException(null);
+            }
+        } catch (JsonIOException | JsonSyntaxException e) {
+            logger.error("parsing failed", e);
+            throw new VKException(null);
+        }
+        return response.response;
+    }
+
+    // *******************************************************************************
+
+    @Deprecated
     public Like get(String ownerId, String itemId) {
         params.put("owner_id", ownerId);
         return get(itemId);
     }
 
+    @Deprecated
     public List<WallPost> get(List<WallPost> posts) {
         Integer step = "1".equals(params.get("friends_only")) ? 100 : 1000;
         params.put("count", step.toString());
@@ -60,7 +161,7 @@ public class Likes {
 
         for (WallPost post : posts) {
             params.put("owner_id", post.to_id);
-            futures.put(post, client.sendAsync(get + "?" + buildRequest(post.id)));
+            futures.put(post, client.sendAsync(buildRequest(post.id)));
         }
 
         Like like;
@@ -98,17 +199,19 @@ public class Likes {
         return posts;
     }
 
+    @Deprecated
     public Like get(String itemId) {
         Integer step = "1".equals(params.get("friends_only")) ? 100 : 1000;
         params.put("count", step.toString());
         params.put("offset", "0");
 
-        InputStream stream = client.send(get + "?" + buildRequest(itemId));
+        InputStream stream = client.send(buildRequest(itemId));
         Like like = get(itemId, step, stream);
 
         return like;
     }
 
+    @Deprecated
     private Like get(String itemId, Integer step, InputStream stream) {
         Like like = getChunk(stream);
         if (notAllUsersGot(like)) {
@@ -117,17 +220,19 @@ public class Likes {
         return like;
     }
 
+    @Deprecated
     private boolean notAllUsersGot(Like like) {
         return like != null && like.count != null && like.count > like.users.length;
     }
 
+    @Deprecated
     private Like getAll(String itemId, Integer step, Like like) {
         InputStream stream;
         List<String> usersLike = new ArrayList<>();
         usersLike.addAll(Arrays.asList(like.users));
         for (Integer offset = step; offset < like.count; offset += step) {
             params.put("offset", offset.toString());
-            stream = client.send(get + "?" + buildRequest(itemId));
+            stream = client.send(buildRequest(itemId));
             like = getChunk(stream);
             usersLike.addAll(Arrays.asList(like.users));
         }
@@ -135,6 +240,7 @@ public class Likes {
         return like;
     }
 
+    @Deprecated
     private Like getChunk(InputStream stream) {
         Like like = null;
         if (stream == null) {
@@ -143,19 +249,34 @@ public class Likes {
         }
 
         try {
-            JsonObject result = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
-            if (result != null) {
-                like = gson.fromJson(result.getAsJsonObject("response"), Like.class);
-            }
+            // TODO remove debugging
+            JsonObject result = parser.parse(traceResponse(stream)).getAsJsonObject();
+            like = gson.fromJson(result.getAsJsonObject("response"), Like.class);
         } catch (JsonSyntaxException | JsonIOException e) {
             logger.error("error", e);
         }
         return like;
     }
 
+    @Deprecated
     protected String buildRequest(String itemId) {
         params.put("item_id", itemId);
-        return joiner.join(params);
+        return get + "?" + joiner.join(params);
+    }
+
+    private String buildRequest(LikeObject type, String ownerId, String itemId, Integer offset, boolean repostOnly) {
+        Map<String, String> params = new HashMap<>();
+        params.put("type", type.toString());
+        params.put("owner_id", ownerId);
+        params.put("item_id", itemId);
+        params.put("count", max_count.toString());
+        if (offset > 0) {
+            params.put("offset", offset.toString());
+        }
+        if (repostOnly) {
+            params.put("filter", "copies");
+        }
+        return get + "?" + joiner.join(params);
     }
 
     /**
@@ -192,6 +313,12 @@ public class Likes {
     public Likes addFriemdsOnly(Integer friendsOnly) {
         params.put("friends_only", friendsOnly.toString());
         return this;
+    }
+
+    // /////////////////////
+
+    private class Response {
+        public Like response;
     }
 
 }

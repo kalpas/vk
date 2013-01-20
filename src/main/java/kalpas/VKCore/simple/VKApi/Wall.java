@@ -29,7 +29,8 @@ import com.google.inject.Inject;
 
 public class Wall {
 
-    // FIXME wallcount
+    // FIXME seems like not retrieves 1st post
+    // FIXME seems like reposts are not shown correctly
 
     private static final Integer max_count = 100;
 
@@ -53,6 +54,10 @@ public class Wall {
 
     public List<WallPost> getPosts(String ownerId) {
         return getPosts(ownerId, false);
+    }
+    
+    public List<WallPost> getPosts(String ownerId, int count) {
+        return getPosts(ownerId, false, count);
     }
 
     public List<WallPost> getPosts(String ownerId, boolean isGroup, int count) {
@@ -140,6 +145,18 @@ public class Wall {
         }
 
         return new AbstractMap.SimpleEntry<Integer, List<WallPost>>(wallPostsCount, list);
+    }
+    
+    public int getPostsCount(String ownerId) {
+        return getPostsCount(ownerId, false);
+    }
+
+    public int getPostsCount(String ownerId, boolean isGroup) {
+        InputStream stream = client.send(buildRequest(ownerId, isGroup, 0, 1));
+        Entry<Integer, List<WallPost>> result = parseWallPosts(stream);
+        result.getKey();
+
+        return result.getKey() == null ? 0 : result.getKey();
     }
 
     @Deprecated

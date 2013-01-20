@@ -67,4 +67,22 @@ public class WallTest extends BaseApiTest {
 
     }
 
+    @Test
+    public void wall_get1_hp() {
+
+        logger.error("separator");
+        List<WallPost> list = wall.getPosts("1080446", 20);
+
+        assertNotNull(list);
+        assertFalse(list.isEmpty());
+        assertEquals(20, list.size());
+
+        logger.info(list.size());
+        for (WallPost post : list) {
+            logger.info(post);
+            logger.info(post.id);
+        }
+
+    }
+
 }
