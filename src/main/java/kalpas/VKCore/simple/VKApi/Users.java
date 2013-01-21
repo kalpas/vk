@@ -8,12 +8,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -71,7 +72,10 @@ public class Users {
 
     public User get(User user) {
         InputStream stream = client.send(buildRequest(user.uid));
-        user = getUsers(stream).get(0);
+        List<User> users = getUsers(stream);
+        if (!users.isEmpty()) {// FIXME smell
+            user = users.get(0);
+        }
         return user;
     }
 

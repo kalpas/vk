@@ -20,6 +20,7 @@ public class WallPost {
     public String       copy_owner_id;
     public String       copy_post_id;
     public String       copy_text;
+    public String       signer_id;
 
     @Override
     public String toString() {

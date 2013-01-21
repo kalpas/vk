@@ -9,6 +9,7 @@ import java.util.Map;
 
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.DO.UserRelation;
+import kalpas.VKCore.stats.DO.EdgeProperties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,6 +111,60 @@ public class GMLHelper {
                     bw.write("\t\tsource " + user.uid);
                     bw.newLine();
                     bw.write("\t\ttarget " + friend.uid);
+                    bw.newLine();
+                    bw.write("\t]");
+                    bw.newLine();
+                }
+            }
+            bw.write("]");
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            logger.error("IO exception", e);
+        } finally {
+            try {
+                bw.close();
+            } catch (Exception e) {
+            }
+        }
+        return;
+    }
+
+    public static void writeToFileM(String fileName, Multimap<User, Map.Entry<EdgeProperties, User>> multimap) {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(new File(fileName + ".gml"), true));
+            bw.write("graph [");
+            bw.newLine();
+            bw.write("\tdirected 1");
+            bw.newLine();
+            bw.write("\tid 1");
+            bw.newLine();
+            for (User node : multimap.keySet()) {
+                bw.write("\tnode [");
+                bw.newLine();
+                bw.write("\t\tid " + node.uid);
+                bw.newLine();
+                bw.write("\t\tlabel \"" + node.first_name + " " + node.last_name + "\"");
+                bw.newLine();
+                bw.write("\t\tsex " + node.sex);
+                bw.newLine();
+                bw.write("\t]");
+                bw.newLine();
+            }
+            for (User user : multimap.keySet()) {
+                for (Map.Entry<EdgeProperties, User> friend : multimap.get(user)) {
+                    if (friend == null) {
+                        continue;
+                    }
+
+                    bw.write("\tedge [");
+                    bw.newLine();
+                    bw.write("\t\tsource " + user.uid);
+                    bw.newLine();
+                    bw.write("\t\ttarget " + friend.getValue().uid);
+                    bw.newLine();
+                    bw.write("\t\tweight " + friend.getKey().reposts);
                     bw.newLine();
                     bw.write("\t]");
                     bw.newLine();

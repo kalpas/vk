@@ -1,15 +1,14 @@
 package kalpas.VKCore;
 
-import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.Friends;
 import kalpas.VKCore.simple.helper.GMLHelper;
 import kalpas.VKCore.simple.helper.HttpClientContainer;
-import kalpas.VKCore.stats.GroupStats;
+import kalpas.VKCore.stats.WallStats;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
-import com.google.common.collect.Multimap;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -52,12 +51,19 @@ public class App {
             // GMLHelper helper = new GMLHelper();
             // helper.writeToFile("out/gml/mileStone", graph.edges.asMap());
 
-            GroupStats stats = injector.getInstance(GroupStats.class);
+            // GroupStats stats = injector.getInstance(GroupStats.class);
+            //
+            // String gid = "21642795";
+            // Multimap<User, User> multimap =
+            // stats.getMemberNetwork("kubana_bel_tour");
+            //
+            // GMLHelper.writeToFile("out\\gml\\" + App.class.toString(),
+            // multimap);
 
-            String gid = "21642795";
-            Multimap<User, User> multimap = stats.getMemberNetwork("kubana_bel_tour");
+            WallStats stats = injector.getInstance(WallStats.class);
 
-            GMLHelper.writeToFile("out\\gml\\" + App.class.toString(), multimap);
+            GMLHelper.writeToFileM("out\\gml\\" + App.class.toString() + new DateTime().getMillis(),
+                    stats.getInteractions("39625974"));
             
 
 
