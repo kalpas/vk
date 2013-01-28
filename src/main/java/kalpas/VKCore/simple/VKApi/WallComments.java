@@ -7,13 +7,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.Comment;
 import kalpas.VKCore.simple.DO.WallPost;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
@@ -42,23 +43,16 @@ public class WallComments {
     @Inject
     private MapJoiner            joiner;
 
-    private Map<String, String>  params       = new HashMap<>();
-
     @Inject
     public WallComments(VKClient client) {
         this.client = client;
-        params.put("need_likes", "1");
-        params.put("sort", "asc");
     }
 
     public List<WallPost> get(List<WallPost> posts) {
-        params.put("count", MAX_COMMENTS.toString());
-        params.put("offset", "0");
 
         Map<WallPost, VKAsyncResult> futures = new HashMap<>();
         for (WallPost post : posts) {
-            params.put("owner_id", post.to_id);
-            futures.put(post, client.sendAsync(get + "?" + buildRequest(post.id)));
+            futures.put(post, client.sendAsync(buildRequest(post.id, post.to_id)));
         }
 
         Iterator<Map.Entry<WallPost, VKAsyncResult>> iterator;
@@ -78,7 +72,7 @@ public class WallComments {
 
         for (WallPost post : posts) {
             if (notAllCommentsGot(post.comments.comments, post.comments.count)) {
-                getRest(post.id, post.comments.comments, post.comments.count);
+                getRest(post.id, post.to_id, post.comments.comments, post.comments.count);
             }
         }
 
@@ -86,32 +80,27 @@ public class WallComments {
     }
 
     public List<Comment> get(String ownerId, String postId) {
-        params.put("count", MAX_COMMENTS.toString());
-        params.put("offset", "0");
-        params.put("owner_id", ownerId);
-
         List<Comment> comments = new ArrayList<>();
 
-        InputStream stream = client.send(get + "?" + buildRequest(postId));
-        get(postId, comments, stream);
+        InputStream stream = client.send(buildRequest(postId, ownerId));
+        get(postId, ownerId, comments, stream);
 
         return comments;
     }
 
-    private void get(String postId, List<Comment> comments, InputStream stream) {
+    private void get(String postId, String ownerId, List<Comment> comments, InputStream stream) {
         Integer commentsCount;
         commentsCount = getChunk(stream, comments);
 
         if (notAllCommentsGot(comments, commentsCount)) {
-            getRest(postId, comments, commentsCount);
+            getRest(postId, ownerId, comments, commentsCount);
         }
     }
 
-    private void getRest(String postId, List<Comment> comments, Integer commentsCount) {
+    private void getRest(String postId, String ownerId, List<Comment> comments, Integer commentsCount) {
         InputStream stream;
         for (Integer offset = MAX_COMMENTS; offset < commentsCount; offset += MAX_COMMENTS) {
-            params.put("offset", offset.toString());
-            stream = client.send(get + "?" + buildRequest(postId));
+            stream = client.send(buildRequest(postId, ownerId, offset, MAX_COMMENTS));
             getChunk(stream, comments);
         }
     }
@@ -140,19 +129,35 @@ public class WallComments {
         return commentsCount != null && !comments.isEmpty() && comments.size() < commentsCount;
     }
 
-    protected String buildRequest(String postId) {
-        params.put("post_id", postId);
-        params.put("preview_length", "0");
-        return joiner.join(params);
+    protected String buildRequest(String postId, String ownerId) {
+        return buildRequest(postId, ownerId, 0, MAX_COMMENTS);
     }
 
+    private String buildRequest(String postId, String ownerId, Integer offset, Integer count) {
+        Map<String, String> params = new HashMap<>();
+
+        params.put("need_likes", "1");
+        params.put("sort", "asc");
+
+        params.put("post_id", postId);
+        params.put("owner_id", ownerId);
+        params.put("preview_length", "0");
+
+        params.put("count", count.toString());
+        params.put("offset", offset.toString());
+
+        return get + "?" + joiner.join(params);
+    }
+
+    @Deprecated
     public WallComments addSort(String sort) {
-        params.put("sort", sort);
+        // params.put("sort", sort);
         return this;
     }
 
+    @Deprecated
     public WallComments addNeedLikes(Integer needLikes) {
-        params.put("need_likes", needLikes.toString());
+        // params.put("need_likes", needLikes.toString());
         return this;
     }
 

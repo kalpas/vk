@@ -103,7 +103,7 @@ public class AuthHelper {
 
         URIBuilder builder = new URIBuilder();
         builder.setScheme("https").setHost(auth).setPath("/authorize").setParameter("client_id", appId)
-                .setParameter("scope", "friends,notify,wall,groups" + (!https ? ",nohttps" : ""))
+                .setParameter("scope", "friends,wall,groups,notify" + (!https ? ",nohttps" : ""))
                 .setParameter("redirect_uri", "http://oauth.vk.com/blank.html").addParameter("display", "popup")
                 .addParameter("response_type", "token");
         String result = null;

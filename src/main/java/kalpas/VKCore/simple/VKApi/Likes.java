@@ -85,8 +85,10 @@ public class Likes {
                 iterator.remove();
                 origin = entry.getKey().likes;
                 result = parseLikes(entry.getValue().get());
-                origin.count = result.count;
-                origin.users = result.users;
+                if (result != null) {
+                    origin.count = result.count;
+                    origin.users = result.users;
+                }
             }
         }
 
@@ -112,8 +114,7 @@ public class Likes {
         return like;
     }
 
-    private void getRemaining(LikeObject type, String ownerId, String itemId, boolean repostOnly, Like like)
- {
+    private void getRemaining(LikeObject type, String ownerId, String itemId, boolean repostOnly, Like like) {
         List<VKAsyncResult> futures = submitRequests4remaining(type, ownerId, itemId, repostOnly, like);
         like.users = Arrays.copyOf(like.users, like.count);
         processResponses(like, futures);
