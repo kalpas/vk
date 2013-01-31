@@ -2,6 +2,7 @@ package kalpas.VKCore.simple.VKApi;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -79,8 +80,8 @@ public class Groups {
     private Response parseInputStream(InputStream stream) {
         Response response = null;
         try {
-            response = gson.fromJson(new InputStreamReader(stream), Response.class);
-        } catch (JsonIOException | JsonSyntaxException e) {
+            response = gson.fromJson(new InputStreamReader(stream,"UTF-8"), Response.class);
+        } catch (JsonIOException | JsonSyntaxException | UnsupportedEncodingException e) {
             logger.error("parsing failed", e);
         }
         return response;

@@ -2,6 +2,7 @@ package kalpas.VKCore;
 
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKHttpClient;
+import kalpas.VKCore.simple.VKApi.client.VKHttpsClient;
 import kalpas.VKCore.simple.helper.AuthHelper;
 import kalpas.VKCore.simple.helper.HttpClientContainer;
 
@@ -23,12 +24,18 @@ public class VKModule extends AbstractModule {
         bind(Boolean.class).annotatedWith(Names.named("isHttps")).toInstance(false);
         bind(Gson.class).in(Singleton.class);
         bind(JsonParser.class).in(Singleton.class);
+        // Sleep.interval = 0L;
     }
 
     @Provides
     public VKHttpClient provideVKHttpClient(@Named("accessToken") String accessToken, @Named("secret") String secret,
             HttpClientContainer container) {
         return new VKHttpClient(accessToken, secret, container);
+    }
+
+    @Provides
+    public VKHttpsClient provideVKHttpsClient(@Named("accessToken") String accessToken, HttpClientContainer container) {
+        return new VKHttpsClient(accessToken, container);
     }
 
     @Provides

@@ -1,9 +1,9 @@
 package kalpas.VKCore.simple.helper;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.Map;
 
@@ -23,7 +23,9 @@ public class GMLHelper {
     public static void writeToFile(String fileName, Map<UserRelation, Collection<User>> edges) {
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new FileWriter(new File(fileName + ".gml"), true));
+            OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(fileName + ".gml", false),
+                    "UTF-8");
+            bw = new BufferedWriter(fileWriter);
             bw.write("graph [");
             bw.newLine();
             bw.write("\tdirected 1");
@@ -81,7 +83,9 @@ public class GMLHelper {
     public static void writeToFile(String fileName, Multimap<User, User> multimap) {
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new FileWriter(new File(fileName + ".gml"), true));
+            OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(fileName + ".gml", false),
+                    "UTF-8");
+            bw = new BufferedWriter(fileWriter);
             bw.write("graph [");
             bw.newLine();
             bw.write("\tdirected 1");
@@ -133,7 +137,9 @@ public class GMLHelper {
     public static void writeToFileM(String fileName, Multimap<User, Map.Entry<EdgeProperties, User>> multimap) {
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new FileWriter(new File(fileName + ".gml"), true));
+            OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(fileName + ".gml", false),
+                    "UTF-8");
+            bw = new BufferedWriter(fileWriter);
             bw.write("graph [");
             bw.newLine();
             bw.write("\tdirected 1");
@@ -165,6 +171,63 @@ public class GMLHelper {
                     bw.write("\t\ttarget " + friend.getValue().uid);
                     bw.newLine();
                     bw.write("\t\tweight " + friend.getKey().reposts);
+                    bw.newLine();
+                    bw.write("\t]");
+                    bw.newLine();
+                }
+            }
+            bw.write("]");
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            logger.error("IO exception", e);
+        } finally {
+            try {
+                bw.close();
+            } catch (Exception e) {
+            }
+        }
+        return;
+    }
+
+    // FIXME awful
+    public static void writeToFileM2(String fileName, Multimap<User, Map.Entry<EdgeProperties, User>> multimap) {
+        BufferedWriter bw = null;
+        try {
+            OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(fileName + ".gml", false),
+                    "UTF-8");
+            bw = new BufferedWriter(fileWriter);
+            bw.write("graph [");
+            bw.newLine();
+            bw.write("\tdirected 1");
+            bw.newLine();
+            bw.write("\tid 1");
+            bw.newLine();
+            for (User node : multimap.keySet()) {
+                bw.write("\tnode [");
+                bw.newLine();
+                bw.write("\t\tid " + node.uid);
+                bw.newLine();
+                bw.write("\t\tlabel \"" + node.first_name + " " + node.last_name + "\"");
+                bw.newLine();
+                bw.write("\t\tsex " + node.sex);
+                bw.newLine();
+                bw.write("\t]");
+                bw.newLine();
+            }
+            for (User user : multimap.keySet()) {
+                for (Map.Entry<EdgeProperties, User> friend : multimap.get(user)) {
+                    if (friend == null) {
+                        continue;
+                    }
+
+                    bw.write("\tedge [");
+                    bw.newLine();
+                    bw.write("\t\tsource " + friend.getValue().uid);
+                    bw.newLine();
+                    bw.write("\t\ttarget " + user.uid);
+                    bw.newLine();
+                    bw.write("\t\tweight " + friend.getKey().likes);
                     bw.newLine();
                     bw.write("\t]");
                     bw.newLine();

@@ -7,6 +7,7 @@
     </appenders>
     <loggers>
         <logger name="org.apache.http" level="error" />
+        <logger name="kalpas.VKCore.simple.VKApi.client" level="debug" />
         <root level="debug">
             <appender-ref ref="STDOUT" />
         </root>

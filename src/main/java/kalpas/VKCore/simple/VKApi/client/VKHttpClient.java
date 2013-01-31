@@ -2,8 +2,6 @@ package kalpas.VKCore.simple.VKApi.client;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.helper.HttpClientContainer;
 
@@ -14,6 +12,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.nio.client.HttpAsyncClient;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class VKHttpClient extends VKClient {
 
@@ -46,6 +46,8 @@ public class VKHttpClient extends VKClient {
 
         request = buildRequest(request);
 
+        logger.debug("request {}", request);
+
         HttpResponse response = null;
         HttpGet get = new HttpGet(request);
         try {
@@ -65,6 +67,8 @@ public class VKHttpClient extends VKClient {
         Validate.notNull(secret);
 
         request = buildRequest(request);
+
+        logger.debug("async request {}", request);
 
         HttpGet get = new HttpGet(request);
         return asyncClient.execute(get, null);

@@ -2,8 +2,8 @@ package kalpas.VKCore.simple.VKApi.client;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import kalpas.VKCore.simple.helper.HttpClientContainer;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpResponse;
@@ -11,6 +11,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.nio.client.HttpAsyncClient;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 //FIXME it is not finished
 public class VKHttpsClient extends VKClient {
@@ -28,15 +30,19 @@ public class VKHttpsClient extends VKClient {
         accessToken = null;
     }
 
-    public VKHttpsClient(String accessToken) {
+    public VKHttpsClient(String accessToken, HttpClientContainer container) {
         this.accessToken = accessToken;
+        client = container.getInstance();
+        asyncClient = container.getAsyncInstance();
     }
 
     @Override
     protected HttpResponse sendInternal(String request) {
         Validate.notNull(accessToken);
 
-        request = "https://" + api + request + "&access_token=" + this.accessToken;
+        request = buildRequest(request);
+
+        logger.debug("request {}", request);
 
         HttpResponse response = null;
         HttpGet get = new HttpGet(request);
@@ -57,10 +63,18 @@ public class VKHttpsClient extends VKClient {
     protected Future<HttpResponse> sendAsyncInternal(String request) {
         Validate.notNull(accessToken);
 
-        request = "https://" + api + request + "&access_token=" + this.accessToken;
+        request = buildRequest(request);
+
+        logger.debug("async request {}", request);
 
         HttpGet get = new HttpGet(request);
         return asyncClient.execute(get, null);
+    }
+
+    private String buildRequest(String request) {
+        request = "/method/" + request + "&access_token=" + this.accessToken;
+        request = "https://" + api + request;
+        return request;
     }
 
 }

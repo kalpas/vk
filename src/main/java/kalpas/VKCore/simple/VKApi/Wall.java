@@ -2,6 +2,7 @@ package kalpas.VKCore.simple.VKApi;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import kalpas.VKCore.simple.DO.WallPost;
+import kalpas.VKCore.simple.VKApi.client.Sleep;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
@@ -66,11 +68,13 @@ public class Wall {
         Entry<Integer, List<WallPost>> result;
 
         if (count <= max_count) {
+            Sleep.sleep();
             stream = client.send(buildRequest(ownerId, isGroup, 0, count));
             result = parseWallPosts(stream);
             list.addAll(result.getValue());
 
         } else {
+            Sleep.sleep();
             stream = client.send(buildRequest(ownerId, isGroup));
             result = parseWallPosts(stream);
             list.addAll(result.getValue());
@@ -99,6 +103,7 @@ public class Wall {
         List<VKAsyncResult> futures = new ArrayList<>();
 
         for (int offset = max_count; offset < totalCount; offset += max_count) {
+            Sleep.sleep();
             futures.add(client.sendAsync(buildRequest(ownerId, isGroup, offset)));
         }
 
@@ -123,7 +128,7 @@ public class Wall {
         List<WallPost> list = new ArrayList<>();
         int wallPostsCount = 0;
         try {
-            JsonObject response = parser.parse(new InputStreamReader(result)).getAsJsonObject();
+            JsonObject response = parser.parse(new InputStreamReader(result,"UTF-8")).getAsJsonObject();
             JsonArray posts = response.getAsJsonArray("response");
             if (posts != null) {
                 Iterator<JsonElement> iterator = posts.iterator();
@@ -142,6 +147,9 @@ public class Wall {
             logger.error("exception while parsing json", e);
         } catch (IllegalStateException e) {
             logger.error("exception while parsing json", e);
+        } catch (UnsupportedEncodingException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
         }
 
         return new AbstractMap.SimpleEntry<Integer, List<WallPost>>(wallPostsCount, list);
@@ -152,6 +160,7 @@ public class Wall {
     }
 
     public int getPostsCount(String ownerId, boolean isGroup) {
+        Sleep.sleep();
         InputStream stream = client.send(buildRequest(ownerId, isGroup, 0, 1));
         Entry<Integer, List<WallPost>> result = parseWallPosts(stream);
         result.getKey();
@@ -194,33 +203,6 @@ public class Wall {
 
         return wallPosts;
 
-    }
-
-    @Deprecated
-    private int get(String ownerId, List<WallPost> wallPosts) {
-        InputStream result = client.send(get + "?" + buildRequest(ownerId, false));
-        return get(wallPosts, result);
-    }
-
-    @Deprecated
-    private int get(List<WallPost> wallPosts, InputStream result) {
-        int wallPostsCount = 0;
-        try {
-            JsonObject response = parser.parse(new InputStreamReader(result)).getAsJsonObject();
-            JsonArray posts = response.getAsJsonArray("response");
-            if (posts != null) {
-                Iterator<JsonElement> iterator = posts.iterator();
-                wallPostsCount = iterator.hasNext() ? iterator.next().getAsInt() : 0;
-                while (iterator.hasNext()) {
-                    wallPosts.add(gson.fromJson(iterator.next(), WallPost.class));
-                }
-            } else {
-                logger.error("error " + response.toString());
-            }
-        } catch (JsonSyntaxException | JsonIOException e) {
-            logger.error("exception while parsing json", e);
-        }
-        return wallPostsCount;
     }
 
     private String buildRequest(String ownerId, boolean isGroup) {

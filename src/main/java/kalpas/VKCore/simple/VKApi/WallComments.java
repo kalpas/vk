@@ -2,6 +2,7 @@ package kalpas.VKCore.simple.VKApi;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,6 +11,7 @@ import java.util.Map;
 
 import kalpas.VKCore.simple.DO.Comment;
 import kalpas.VKCore.simple.DO.WallPost;
+import kalpas.VKCore.simple.VKApi.client.Sleep;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
@@ -52,6 +54,7 @@ public class WallComments {
 
         Map<WallPost, VKAsyncResult> futures = new HashMap<>();
         for (WallPost post : posts) {
+            Sleep.sleep();
             futures.put(post, client.sendAsync(buildRequest(post.id, post.to_id)));
         }
 
@@ -82,6 +85,7 @@ public class WallComments {
     public List<Comment> get(String ownerId, String postId) {
         List<Comment> comments = new ArrayList<>();
 
+        Sleep.sleep();
         InputStream stream = client.send(buildRequest(postId, ownerId));
         get(postId, ownerId, comments, stream);
 
@@ -100,6 +104,7 @@ public class WallComments {
     private void getRest(String postId, String ownerId, List<Comment> comments, Integer commentsCount) {
         InputStream stream;
         for (Integer offset = MAX_COMMENTS; offset < commentsCount; offset += MAX_COMMENTS) {
+            Sleep.sleep();
             stream = client.send(buildRequest(postId, ownerId, offset, MAX_COMMENTS));
             getChunk(stream, comments);
         }
@@ -108,7 +113,7 @@ public class WallComments {
     private Integer getChunk(InputStream stream, List<Comment> comments) {
         Integer commentsCount = null;
         try {
-            JsonObject json = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
+            JsonObject json = parser.parse(new InputStreamReader(stream,"UTF-8")).getAsJsonObject();
             JsonArray response = json.getAsJsonArray("response");
             if (response != null) {
                 Iterator<JsonElement> iterator = response.iterator();
@@ -121,6 +126,9 @@ public class WallComments {
             }
         } catch (JsonSyntaxException | JsonIOException e) {
             logger.error("exception while parsing json", e);
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         return commentsCount;
     }

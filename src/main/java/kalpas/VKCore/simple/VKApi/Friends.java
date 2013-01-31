@@ -2,6 +2,7 @@ package kalpas.VKCore.simple.VKApi;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,14 +57,14 @@ public class Friends {
         List<User> friendsList = null;
         InputStream stream = client.send(buildRequest(uid));
         try {
-            JsonObject response = parser.parse(new InputStreamReader(stream)).getAsJsonObject();
+            JsonObject response = parser.parse(new InputStreamReader(stream,"UTF-8")).getAsJsonObject();
             JsonArray friends = response.getAsJsonArray("response");
             if (friends == null) {// FIXME smells
                 return friendsList;
             }
 
             friendsList = processArray(friends);
-        } catch (JsonSyntaxException | JsonIOException e) {
+        } catch (JsonSyntaxException | JsonIOException | UnsupportedEncodingException e) {
             logger.error("exception while parsing json", e);
         }
         return friendsList;
@@ -102,13 +103,13 @@ public class Friends {
                         if(inputStream == null){
                             continue;// FIXME smells. hot place
                         }
-                        JsonObject json = parser.parse(new InputStreamReader(inputStream)).getAsJsonObject();
+                        JsonObject json = parser.parse(new InputStreamReader(inputStream,"UTF-8")).getAsJsonObject();
                         friends = json.getAsJsonArray("response");
                         if (friends != null) {
                             friendsList = processArray(friends);
                             friendsMap.put(entry.getKey(), friendsList);
                         }
-                    } catch (JsonParseException e) {
+                    } catch (JsonParseException | UnsupportedEncodingException e) {
                         logger.error("error parsing json", e);
                     }
                 }

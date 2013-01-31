@@ -1,14 +1,18 @@
 package kalpas.VKCore;
 
+import java.util.Map;
+
+import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.Friends;
 import kalpas.VKCore.simple.helper.GMLHelper;
 import kalpas.VKCore.simple.helper.HttpClientContainer;
 import kalpas.VKCore.stats.WallStats;
+import kalpas.VKCore.stats.DO.EdgeProperties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
 
+import com.google.common.collect.Multimap;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -62,9 +66,13 @@ public class App {
 
             WallStats stats = injector.getInstance(WallStats.class);
 
-            GMLHelper.writeToFileM("out\\gml\\" + App.class.toString() + new DateTime().getMillis(),
-                    stats.getInteractions("39625974"));
-            
+            Multimap<User, Map.Entry<EdgeProperties, User>> multimap = stats.getRepostsNet("45435572");
+            GMLHelper.writeToFileM("reposts" + "_out", multimap);
+
+            multimap = stats.getInteractions("45435572", null);
+            GMLHelper.writeToFileM2("interactions" + "_out", multimap);
+
+            stats.saveDynamics("45435572", null);
 
 
             // Users users = injector.getInstance(Users.class);

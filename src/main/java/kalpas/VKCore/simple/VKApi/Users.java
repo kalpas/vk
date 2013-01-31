@@ -2,6 +2,7 @@ package kalpas.VKCore.simple.VKApi;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.VKApi.client.Sleep;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
@@ -23,6 +25,7 @@ import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
@@ -71,6 +74,7 @@ public class Users {
     }
 
     public User get(User user) {
+        Sleep.sleep();
         InputStream stream = client.send(buildRequest(user.uid));
         List<User> users = getUsers(stream);
         if (!users.isEmpty()) {// FIXME smell
@@ -82,6 +86,7 @@ public class Users {
     public List<User> get(List<User> users) {
         Map<User, VKAsyncResult> futures = new HashMap<User, VKClient.VKAsyncResult>();
         for (User user : users) {
+            Sleep.sleep();
             futures.put(user, client.sendAsync(buildRequest(user.uid)));
         }
 
@@ -114,6 +119,7 @@ public class Users {
         }
 
         String uids = Joiner.on(",").skipNulls().join(Iterables.transform(users, getUid));
+        Sleep.sleep();
         InputStream stream = client.send(buildRequest(uids));
 
         return getUsers(stream);
@@ -124,6 +130,7 @@ public class Users {
             throw new IllegalArgumentException("amount shouldn't exceed 1000 per call");
         }
 
+        Sleep.sleep();
         InputStream stream = client.send(buildRequest(Joiner.on(",").skipNulls().join(uids)));
         return getUsers(stream);
     }
@@ -138,8 +145,8 @@ public class Users {
         JsonArray array = null;
         // FIXME smells here i guess
         try {
-            array = parser.parse(new InputStreamReader(stream)).getAsJsonObject().getAsJsonArray("response");
-        } catch (IllegalStateException e) {
+            array = parser.parse(new InputStreamReader(stream,"UTF-8")).getAsJsonObject().getAsJsonArray("response");
+        } catch (IllegalStateException | JsonIOException | JsonSyntaxException | UnsupportedEncodingException e) {
             logger.error("error parsing ", e);
         }
         if (array != null) {

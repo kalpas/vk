@@ -73,6 +73,8 @@ public class AuthHelper {
                             secret = response[3].split("=")[1];
                         }
                         logger.info("access_token = " + accessToken + ", uid = " + selfUid);
+
+                        event.doit = false;
                         browser.stop();
                         browser.dispose();
                         display.dispose();
@@ -103,7 +105,7 @@ public class AuthHelper {
 
         URIBuilder builder = new URIBuilder();
         builder.setScheme("https").setHost(auth).setPath("/authorize").setParameter("client_id", appId)
-                .setParameter("scope", "friends,wall,groups,notify" + (!https ? ",nohttps" : ""))
+                .setParameter("scope", "friends,wall,groups" + (!https ? ",nohttps" : ""))
                 .setParameter("redirect_uri", "http://oauth.vk.com/blank.html").addParameter("display", "popup")
                 .addParameter("response_type", "token");
         String result = null;
