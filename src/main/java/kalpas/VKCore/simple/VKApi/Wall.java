@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import kalpas.VKCore.simple.DO.WallPost;
-import kalpas.VKCore.simple.VKApi.client.Sleep;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
@@ -69,13 +68,11 @@ public class Wall {
         Entry<Integer, List<WallPost>> result;
 
         if (count <= max_count) {
-            Sleep.sleep();
             stream = client.send(buildRequest(ownerId, isGroup, 0, count));
             result = parseWallPosts(stream);
             list.addAll(result.getValue());
 
         } else {
-            Sleep.sleep();
             stream = client.send(buildRequest(ownerId, isGroup));
             result = parseWallPosts(stream);
             list.addAll(result.getValue());
@@ -104,7 +101,6 @@ public class Wall {
         List<VKAsyncResult> futures = new ArrayList<>();
 
         for (int offset = max_count; offset < totalCount; offset += max_count) {
-            Sleep.sleep();
             futures.add(client.sendAsync(buildRequest(ownerId, isGroup, offset)));
         }
 
@@ -161,7 +157,6 @@ public class Wall {
     }
 
     public int getPostsCount(String ownerId, boolean isGroup) {
-        Sleep.sleep();
         InputStream stream = client.send(buildRequest(ownerId, isGroup, 0, 1));
         Entry<Integer, List<WallPost>> result = parseWallPosts(stream);
         result.getKey();
@@ -184,7 +179,6 @@ public class Wall {
         int totalCount = max_count;
         DateTime firstPost = DateTime.now();
         for (int offset = 0; offset < totalCount && !now.minusDays(days).isAfter(firstPost); offset += max_count) {
-           Sleep.sleep();
            stream = client.send(buildRequest(ownerId, isGroup, offset));
            result = parseWallPosts(stream);
            list.addAll(result.getValue());

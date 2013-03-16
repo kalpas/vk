@@ -14,7 +14,7 @@ import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//FIXME it is not finished
+//FIXME it is not finished// and timeouts are not added
 public class VKHttpsClient extends VKClient {
 
     private Logger          logger = LogManager.getLogger(VKHttpsClient.class);

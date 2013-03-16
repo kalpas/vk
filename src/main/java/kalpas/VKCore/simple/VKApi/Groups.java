@@ -1,5 +1,6 @@
 package kalpas.VKCore.simple.VKApi;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,11 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 import kalpas.VKCore.simple.DO.User;
-import kalpas.VKCore.simple.VKApi.client.Sleep;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
-import kalpas.VKCore.util.DebugUtils;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,24 +47,23 @@ public class Groups {
         this.client = client;
     }
 
-    public List<User> getMembers(String gid) {
+    public List<User> getMembers(String gid) throws VKError {
         List<User> members = new ArrayList<>();
 
-        Response response = parseInputStream(client.send(buildRequest(gid)));
+        GetMembersResponse response = parseInputStream(client.send(buildRequest(gid)));
         processResponse(members, response);
 
-        if (response.response.count > max_count) {
+        if (response.count > max_count) {
             List<VKAsyncResult> futures = new ArrayList<>();
-            for (int offset = max_count; offset < response.response.count; offset += max_count) {
+            for (int offset = max_count; offset < response.count; offset += max_count) {
                 futures.add(client.sendAsync(buildRequest(gid, offset)));
-                Sleep.sleep();
             }
             processAsyncResults(members, futures);
         }
         return members;
     }
 
-    private void processAsyncResults(List<User> members, List<VKAsyncResult> futures) {
+    private void processAsyncResults(List<User> members, List<VKAsyncResult> futures) throws VKError {
         VKAsyncResult future;
         while (!futures.isEmpty()) {
             Iterator<VKAsyncResult> iterator = futures.iterator();
@@ -78,23 +78,24 @@ public class Groups {
         }
     }
 
-    private Response parseInputStream(InputStream stream) {
-        Response response = null;
+    private GetMembersResponse parseInputStream(InputStream stream) throws VKError {
+        GetMembersResponse response = null;
         try {
-            String string = DebugUtils.traceResponse(stream);
-            response = gson.fromJson(string, Response.class);
-            // response = gson.fromJson(new InputStreamReader(stream,"UTF-8"),
-            // Response.class);
-            // } catch (JsonIOException | JsonSyntaxException |
-            // UnsupportedEncodingException e) {
+            String json = IOUtils.toString(stream, "UTF-8");
+            response = gson.fromJson(json, Response.class).response;
+            if (response == null) {
+                throw new VKError(json);
+            }
         } catch (JsonIOException | JsonSyntaxException e) {
             logger.error("parsing failed", e);
+        } catch (IOException e) {
+            logger.error(e);
         }
         return response;
     }
 
-    private void processResponse(List<User> members, Response response) {
-        for (String uid : response.response.users) {
+    private void processResponse(List<User> members, GetMembersResponse response) {
+        for (String uid : response.users) {
             members.add(new User(uid));
         }
     }

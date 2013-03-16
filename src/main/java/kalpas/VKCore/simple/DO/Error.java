@@ -1,5 +1,6 @@
 package kalpas.VKCore.simple.DO;
 
+//FIXME what for?
 public class Error {
 
     public ErrorDetails error;

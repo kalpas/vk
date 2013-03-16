@@ -15,7 +15,6 @@ import java.util.Set;
 
 import kalpas.VKCore.simple.DO.Like;
 import kalpas.VKCore.simple.DO.WallPost;
-import kalpas.VKCore.simple.VKApi.client.Sleep;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 import kalpas.VKCore.util.DebugUtils;
@@ -69,7 +68,6 @@ public class Likes {
 
         Map<WallPost, VKAsyncResult> futures = new HashMap<>();
         for (WallPost post : list) {
-            Sleep.sleep();
             futures.put(post, client.sendAsync(buildRequest(LikeObject.post, post.to_id, post.id, 0, repostOnly)));
         }
 
@@ -109,7 +107,6 @@ public class Likes {
     }
 
     public Like getLikes(LikeObject type, String ownerId, String itemId, boolean repostOnly) {
-        Sleep.sleep();
         InputStream stream = client.send(buildRequest(type, ownerId, itemId, 0, repostOnly));
         Like like = parseLikes(stream);
 
@@ -152,7 +149,6 @@ public class Likes {
             boolean repostOnly, Like like) {
         List<VKAsyncResult> futures = new ArrayList<>();
         for (int offset = max_count; offset < like.count; offset += max_count) {
-            Sleep.sleep();
             futures.add(client.sendAsync(DebugUtils
                     .traceRequest(buildRequest(type, ownerId, itemId, offset, repostOnly))));
         }
@@ -193,7 +189,6 @@ public class Likes {
 
         for (WallPost post : posts) {
             params.put("owner_id", post.to_id);
-            Sleep.sleep();
             futures.put(post, client.sendAsync(buildRequest(post.id)));
         }
 
@@ -238,7 +233,6 @@ public class Likes {
         params.put("count", step.toString());
         params.put("offset", "0");
 
-        Sleep.sleep();
         InputStream stream = client.send(buildRequest(itemId));
         Like like = get(itemId, step, stream);
 
@@ -266,7 +260,6 @@ public class Likes {
         usersLike.addAll(Arrays.asList(like.users));
         for (Integer offset = step; offset < like.count; offset += step) {
             params.put("offset", offset.toString());
-            Sleep.sleep();
             stream = client.send(buildRequest(itemId));
             like = getChunk(stream);
             usersLike.addAll(Arrays.asList(like.users));

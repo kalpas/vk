@@ -30,7 +30,7 @@ public class HttpClientContainer {
             synchronized (this) {
                 if (instance == null) {
                     PoolingClientConnectionManager manager = new PoolingClientConnectionManager();
-                    manager.setMaxTotal(200);
+                    manager.setMaxTotal(40);
                     instance = new DefaultHttpClient(manager);
                     instance.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.IGNORE_COOKIES);
                 }
@@ -46,8 +46,8 @@ public class HttpClientContainer {
                     try {
                         ConnectingIOReactor reactor = new DefaultConnectingIOReactor();
                         PoolingClientAsyncConnectionManager manager = new PoolingClientAsyncConnectionManager(reactor);
-                        manager.setDefaultMaxPerRoute(400);
-                        manager.setMaxTotal(400);
+                        manager.setDefaultMaxPerRoute(20);
+                        manager.setMaxTotal(40);
                         asyncInstance = new DefaultHttpAsyncClient(manager);
                         asyncInstance.start();
                     } catch (IOReactorException e) {

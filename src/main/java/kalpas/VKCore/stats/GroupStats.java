@@ -1,13 +1,16 @@
 package kalpas.VKCore.stats;
 
+import java.util.Collections;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.VKApi.Friends;
 import kalpas.VKCore.simple.VKApi.Groups;
 import kalpas.VKCore.simple.VKApi.Users;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -27,7 +30,15 @@ public class GroupStats {
     private Users   users;
 
     public Multimap<User, User> getMemberNetwork(String gid) {
-        List<User> members = groups.getMembers(gid);
+        List<User> members = Collections.emptyList();
+        try{
+            members = groups.getMembers(gid);
+        } catch (VKError e) {
+            // TODO
+            // place code to recover from error
+            logger.error("vk returned error: {}", e.getMessage());
+            logger.error(e.getRobustError());
+        }
 
         logger.debug("members " + members.size());
 

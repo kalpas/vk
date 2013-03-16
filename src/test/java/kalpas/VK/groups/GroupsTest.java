@@ -7,6 +7,7 @@ import java.util.List;
 
 import kalpas.VK.BaseApiTest;
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.VKApi.Groups;
 
 import org.junit.After;
@@ -30,7 +31,7 @@ public class GroupsTest extends BaseApiTest {
     }
 
     @Test
-    public void getMembers_hp() {
+    public void getMembers_hp() throws VKError {
         List<User> members = groups.getMembers(fearTheBeard);
         assertNotNull(members);
         assertFalse(members.isEmpty());

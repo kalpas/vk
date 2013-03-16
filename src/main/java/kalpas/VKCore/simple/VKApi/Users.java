@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import kalpas.VKCore.simple.DO.User;
-import kalpas.VKCore.simple.VKApi.client.Sleep;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
@@ -74,7 +73,6 @@ public class Users {
     }
 
     public User get(User user) {
-        Sleep.sleep();
         InputStream stream = client.send(buildRequest(user.uid));
         List<User> users = getUsers(stream);
         if (!users.isEmpty()) {// FIXME smell
@@ -86,7 +84,6 @@ public class Users {
     public List<User> get(List<User> users) {
         Map<User, VKAsyncResult> futures = new HashMap<User, VKClient.VKAsyncResult>();
         for (User user : users) {
-            Sleep.sleep();
             futures.put(user, client.sendAsync(buildRequest(user.uid)));
         }
 
@@ -119,7 +116,6 @@ public class Users {
         }
 
         String uids = Joiner.on(",").skipNulls().join(Iterables.transform(users, getUid));
-        Sleep.sleep();
         InputStream stream = client.send(buildRequest(uids));
 
         return getUsers(stream);
@@ -130,7 +126,6 @@ public class Users {
             throw new IllegalArgumentException("amount shouldn't exceed 1000 per call");
         }
 
-        Sleep.sleep();
         InputStream stream = client.send(buildRequest(Joiner.on(",").skipNulls().join(uids)));
         return getUsers(stream);
     }

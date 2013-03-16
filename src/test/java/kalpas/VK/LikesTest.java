@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import kalpas.VKCore.simple.DO.Like;
-import kalpas.VKCore.simple.DO.VKException;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.DO.WallPost;
 import kalpas.VKCore.simple.VKApi.Likes;
 import kalpas.VKCore.simple.VKApi.Likes.LikeObject;
@@ -87,7 +87,7 @@ public class LikesTest extends BaseApiTest {
 
     }
 
-    @Test(expected = VKException.class)
+    @Test(expected = VKError.class)
     @Ignore
     public void likes_getLikesMoreThenMax_ex() {
         likes.getLikes(LikeObject.note, "-21642795", "251539");

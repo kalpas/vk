@@ -65,18 +65,6 @@ public class VKHttpClient extends VKClient {
         return response;
     }
 
-    private void sleepIfNeeded() {
-        long now = System.currentTimeMillis();
-        long diff = now - lastRequest;
-        if (diff < offset) {
-            try {
-                Thread.sleep(offset - diff);
-            } catch (InterruptedException e) {
-                logger.error(e);
-            }
-        }
-    }
-
     @Override
     protected Future<HttpResponse> sendAsyncInternal(String request) {
         Validate.notNull(accessToken);
@@ -97,5 +85,19 @@ public class VKHttpClient extends VKClient {
 
         request = "http://" + api + request;
         return request;
+    }
+
+    private void sleepIfNeeded() {
+        long now = System.currentTimeMillis();
+        long diff = now - lastRequest;
+        if (diff < offset) {
+            try {
+                logger.debug("sleeping for {} s", offset - diff);
+                Thread.sleep(offset - diff);
+            } catch (InterruptedException e) {
+                logger.error(e);
+            }
+        }
+        lastRequest = System.currentTimeMillis();
     }
 }

@@ -6,11 +6,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public abstract class VKClient {
 
@@ -69,7 +69,7 @@ public abstract class VKClient {
             } catch (InterruptedException e) {
                 logger.error("interrupted", e);
             } catch (ExecutionException e) {
-                logger.error("exec exception", e);
+                logger.error("exec exception, possibly cause bu too many requests or network issue", e);
             } catch (Throwable e) {
                 logger.fatal("SMTH REALLLY BAD HAPPENED", e);
             }

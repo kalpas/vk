@@ -16,8 +16,7 @@ public class DebugUtils {
         try {
             json = IOUtils.toString(stream, "UTF-8");
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error(e);
         }
         logger.debug(json);
         return json;
