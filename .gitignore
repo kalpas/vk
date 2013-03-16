@@ -4,3 +4,4 @@
 /out
 *.log
 dependency-reduced*
+*.csv
