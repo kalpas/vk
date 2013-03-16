@@ -14,7 +14,7 @@ public class DebugUtils {
     public static String traceResponse(InputStream stream) {
         String json = null;
         try {
-            json = IOUtils.toString(stream);
+            json = IOUtils.toString(stream, "UTF-8");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

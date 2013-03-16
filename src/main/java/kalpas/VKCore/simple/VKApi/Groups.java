@@ -1,8 +1,6 @@
 package kalpas.VKCore.simple.VKApi;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,8 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.VKApi.client.Sleep;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
+import kalpas.VKCore.util.DebugUtils;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,6 +56,7 @@ public class Groups {
             List<VKAsyncResult> futures = new ArrayList<>();
             for (int offset = max_count; offset < response.response.count; offset += max_count) {
                 futures.add(client.sendAsync(buildRequest(gid, offset)));
+                Sleep.sleep();
             }
             processAsyncResults(members, futures);
         }
@@ -80,8 +81,13 @@ public class Groups {
     private Response parseInputStream(InputStream stream) {
         Response response = null;
         try {
-            response = gson.fromJson(new InputStreamReader(stream,"UTF-8"), Response.class);
-        } catch (JsonIOException | JsonSyntaxException | UnsupportedEncodingException e) {
+            String string = DebugUtils.traceResponse(stream);
+            response = gson.fromJson(string, Response.class);
+            // response = gson.fromJson(new InputStreamReader(stream,"UTF-8"),
+            // Response.class);
+            // } catch (JsonIOException | JsonSyntaxException |
+            // UnsupportedEncodingException e) {
+        } catch (JsonIOException | JsonSyntaxException e) {
             logger.error("parsing failed", e);
         }
         return response;

@@ -26,6 +26,9 @@ public class VKHttpClient extends VKClient {
     private HttpClient      client;
     private HttpAsyncClient asyncClient;
 
+    private long            lastRequest = System.currentTimeMillis();
+    private long            offset      = 340L;
+
     @SuppressWarnings("unused")
     private VKHttpClient() {
         accessToken = null;
@@ -50,6 +53,7 @@ public class VKHttpClient extends VKClient {
 
         HttpResponse response = null;
         HttpGet get = new HttpGet(request);
+        sleepIfNeeded();
         try {
             response = client.execute(get);
         } catch (ClientProtocolException e) {
@@ -59,6 +63,18 @@ public class VKHttpClient extends VKClient {
         }
 
         return response;
+    }
+
+    private void sleepIfNeeded() {
+        long now = System.currentTimeMillis();
+        long diff = now - lastRequest;
+        if (diff < offset) {
+            try {
+                Thread.sleep(offset - diff);
+            } catch (InterruptedException e) {
+                logger.error(e);
+            }
+        }
     }
 
     @Override
@@ -71,6 +87,7 @@ public class VKHttpClient extends VKClient {
         logger.debug("async request {}", request);
 
         HttpGet get = new HttpGet(request);
+        sleepIfNeeded();
         return asyncClient.execute(get, null);
     }
 

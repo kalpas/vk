@@ -18,6 +18,7 @@ import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
@@ -57,7 +58,7 @@ public class Wall {
     public List<WallPost> getPosts(String ownerId) {
         return getPosts(ownerId, false);
     }
-    
+
     public List<WallPost> getPosts(String ownerId, int count) {
         return getPosts(ownerId, false, count);
     }
@@ -128,7 +129,7 @@ public class Wall {
         List<WallPost> list = new ArrayList<>();
         int wallPostsCount = 0;
         try {
-            JsonObject response = parser.parse(new InputStreamReader(result,"UTF-8")).getAsJsonObject();
+            JsonObject response = parser.parse(new InputStreamReader(result, "UTF-8")).getAsJsonObject();
             JsonArray posts = response.getAsJsonArray("response");
             if (posts != null) {
                 Iterator<JsonElement> iterator = posts.iterator();
@@ -154,7 +155,7 @@ public class Wall {
 
         return new AbstractMap.SimpleEntry<Integer, List<WallPost>>(wallPostsCount, list);
     }
-    
+
     public int getPostsCount(String ownerId) {
         return getPostsCount(ownerId, false);
     }
@@ -166,6 +167,41 @@ public class Wall {
         result.getKey();
 
         return result.getKey() == null ? 0 : result.getKey();
+    }
+
+    public List<WallPost> getPosts4Period(String ownerId, boolean isGroup, int days) {
+        List<WallPost> list = new ArrayList<>();
+        InputStream stream;
+        Entry<Integer, List<WallPost>> result;
+        DateTime now = new DateTime();
+
+        // Sleep.sleep();
+        // stream = client.send(buildRequest(ownerId, isGroup, 0, max_count));
+        // result = parseWallPosts(stream);
+        // list.addAll(result.getValue());
+
+        
+        int totalCount = max_count;
+        DateTime firstPost = DateTime.now();
+        for (int offset = 0; offset < totalCount && !now.minusDays(days).isAfter(firstPost); offset += max_count) {
+           Sleep.sleep();
+           stream = client.send(buildRequest(ownerId, isGroup, offset));
+           result = parseWallPosts(stream);
+           list.addAll(result.getValue());
+           firstPost = new DateTime(Long.valueOf(list.get(list.size() - 1).date) * 1000L);
+            totalCount = result.getKey();
+        }
+        
+        Iterator<WallPost> iterator = list.iterator();
+        WallPost post = null;
+        while(iterator.hasNext()){
+            post = iterator.next();
+            if (new DateTime(Long.valueOf(post.date) * 1000L).isBefore(now.minusDays(days))) {
+                iterator.remove();
+            }
+        }
+
+        return list;
     }
 
     @Deprecated

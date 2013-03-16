@@ -12,6 +12,7 @@ import kalpas.VKCore.simple.VKApi.Wall;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,8 +82,19 @@ public class WallTest extends BaseApiTest {
         for (WallPost post : list) {
             logger.info(post);
             logger.info(post.id);
+
+            DateTime time = new DateTime(Long.valueOf(post.date) * 1000L);
+            logger.info(time);
         }
 
+    }
+
+    @Test
+    public void wall_4period() {
+        logger.error("separator");
+
+        List<WallPost> list = wall.getPosts4Period("1080446", false, 20);
+        assertNotNull(list);
     }
 
 }
