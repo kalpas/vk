@@ -21,6 +21,11 @@ public class VKError extends Exception {
         return error.error_msg;
     }
 
+    public int getErrorCode(){
+        parseIfNot();
+        return Integer.valueOf(error.error_code);
+    }
+
     private void parseIfNot() {
         if(error==null){
             Gson gson = new Gson();

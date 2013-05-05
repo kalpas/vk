@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import kalpas.VKCore.simple.DO.WallPost.Comments;
 import kalpas.VKCore.simple.VKApi.Friends;
@@ -13,6 +11,9 @@ import kalpas.VKCore.simple.VKApi.Likes;
 import kalpas.VKCore.simple.VKApi.Users;
 import kalpas.VKCore.simple.VKApi.Wall;
 import kalpas.VKCore.simple.VKApi.WallComments;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
@@ -49,7 +50,13 @@ public class NewFriendsGraph {
         LIKES.addType("post");
 
         User self = USERS.get(selfId);
-        List<User> friends = FRIENDS.get(self);
+        List<User> friends = null;
+        try {// FIXME fix later
+            friends = FRIENDS.get(self);
+        } catch (VKError e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         logger.info(friends.size() + " friends");
         friends = USERS.get(friends);
 

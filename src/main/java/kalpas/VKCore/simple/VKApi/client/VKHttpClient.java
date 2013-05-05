@@ -27,7 +27,7 @@ public class VKHttpClient extends VKClient {
     private HttpAsyncClient asyncClient;
 
     private long            lastRequest = System.currentTimeMillis();
-    private long            offset      = 340L;
+    private long            offset      = 400L;
 
     @SuppressWarnings("unused")
     private VKHttpClient() {
@@ -97,6 +97,8 @@ public class VKHttpClient extends VKClient {
             } catch (InterruptedException e) {
                 logger.error(e);
             }
+        } else {
+            logger.debug("no sleep");
         }
         lastRequest = System.currentTimeMillis();
     }

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import kalpas.VKCore.simple.DO.City;
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
@@ -46,6 +47,8 @@ public class Users {
     private Gson                   gson;
     @Inject
     private JsonParser             parser;
+    @Inject
+    private Locations              locations;
 
     private Function<User, String> getUid         = new Function<User, String>() {
                                                       @Override
@@ -155,18 +158,22 @@ public class Users {
     }
 
     private User getUser(JsonElement element) {
+        User user = null;
         try {
-            return gson.fromJson(element, User.class);
+            user = gson.fromJson(element, User.class);
+            City city = locations.getCityById(user.city);
+            if (city != null)
+                user.city = city.name;
         } catch (JsonSyntaxException e) {
             logger.error("exception while parsing json", e);
-            return null;
         }
+        return user;
     }
 
     // ********************** REQUEST BUILDING **********************
 
     protected String buildRequest(String uid) {
-        return buildRequest(uid, DEFAULT_FIELDS);
+        return buildRequest(uid, ALL_FIELDS);// used to be DEFAULT_FIELDS
     }
 
     protected String buildRequest(String uid, String[] fields) {

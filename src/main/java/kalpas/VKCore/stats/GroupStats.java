@@ -49,12 +49,14 @@ public class GroupStats {
         int progressCounter = 0;
         for (User member : members) {
             memberNetwork.put(member, null);
-            List<User> memberFriends = friends.get(member);// FIXME resturns
-                                                           // null. sucks.
-                                                           // better empty
-                                                           // collection. all
-                                                           // that not null
-                                                           // checks sucks
+
+            List<User> memberFriends = null;
+            try {
+                memberFriends = friends.get(member);
+            } catch (VKError e) {
+                // FIXME add code to recover from error
+                e.printStackTrace();
+            }
             if (memberFriends == null) {
                 continue;
             }

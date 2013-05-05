@@ -10,6 +10,7 @@ import java.util.Map;
 
 import kalpas.VK.BaseApiTest;
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.VKApi.Friends;
 
 import org.junit.After;
@@ -32,7 +33,7 @@ public class FriendsTest extends BaseApiTest {
     }
     
     @Test
-    public void friends_get_hp() {
+    public void friends_get_hp() throws VKError {
         List<User> list = friends.get(selfUid);
         
         assertFriendsLoaded(list);
@@ -40,7 +41,7 @@ public class FriendsTest extends BaseApiTest {
     }
     
     @Test
-    public void friends_getByUser_hp() {
+    public void friends_getByUser_hp() throws VKError {
         List<User> list = friends.get(new User(selfUid));
 
         assertFriendsLoaded(list);

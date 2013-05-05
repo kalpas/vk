@@ -1,19 +1,23 @@
 package kalpas.VKCore.simple.VKApi;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,25 +56,33 @@ public class Friends {
         this.client = vkClient;
     }
 
-    public List<User> get(String uid) {
+    public List<User> get(String uid) throws VKError {
 
-        List<User> friendsList = null;
+        List<User> friendsList = Collections.emptyList();
         InputStream stream = client.send(buildRequest(uid));
         try {
-            JsonObject response = parser.parse(new InputStreamReader(stream,"UTF-8")).getAsJsonObject();
+            String json = IOUtils.toString(stream, "UTF-8");
+            JsonObject response = parser.parse(json).getAsJsonObject();
             JsonArray friends = response.getAsJsonArray("response");
-            if (friends == null) {// FIXME smells
-                return friendsList;
+            if (friends == null) {
+                VKError error = new VKError(json);
+                if (error.getErrorCode() == 15) {
+                    return friendsList;
+                } else {
+                    throw error;
+                }
             }
-
             friendsList = processArray(friends);
         } catch (JsonSyntaxException | JsonIOException | UnsupportedEncodingException e) {
             logger.error("exception while parsing json", e);
+        } catch (IOException e) {
+            logger.error(e);
         }
+
         return friendsList;
     }
 
-    public List<User> get(User user) {
+    public List<User> get(User user) throws VKError {
         return get(user.uid);
     }
 
