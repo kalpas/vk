@@ -14,7 +14,6 @@ import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//FIXME it is not finished// and timeouts are not added
 public class VKHttpsClient extends VKClient {
 
     private Logger          logger = LogManager.getLogger(VKHttpsClient.class);
@@ -46,6 +45,7 @@ public class VKHttpsClient extends VKClient {
 
         HttpResponse response = null;
         HttpGet get = new HttpGet(request);
+        sleepIfNeeded();
         try {
             response = client.execute(get);
         } catch (ClientProtocolException e) {
@@ -68,11 +68,12 @@ public class VKHttpsClient extends VKClient {
         logger.debug("async request {}", request);
 
         HttpGet get = new HttpGet(request);
+        sleepIfNeeded();
         return asyncClient.execute(get, null);
     }
 
     private String buildRequest(String request) {
-        request = "/method/" + request + "&access_token=" + this.accessToken;
+        request = "/method/" + request + "&v=5.0" + "&access_token=" + this.accessToken;
         request = "https://" + api + request;
         return request;
     }

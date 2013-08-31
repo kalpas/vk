@@ -101,7 +101,7 @@ public class GMLHelper {
                 bw.newLine();
                 bw.write("\t\tsex " + node.sex);
                 bw.newLine();
-                bw.write("\t\tlocation " + node.city);
+                bw.write("\t\tlocation \"" + node.city + "\"");
                 bw.newLine();
                 bw.write("\t]");
                 bw.newLine();
@@ -157,7 +157,7 @@ public class GMLHelper {
                 bw.newLine();
                 bw.write("\t\tsex " + node.sex);
                 bw.newLine();
-                bw.write("\t\tlocation " + node.city);
+                bw.write("\t\tlocation \"" + node.city + "\"");
                 bw.newLine();
                 bw.write("\t]");
                 bw.newLine();
@@ -216,7 +216,7 @@ public class GMLHelper {
                 bw.newLine();
                 bw.write("\t\tsex " + node.sex);
                 bw.newLine();
-                bw.write("\t\tlocation " + node.city);
+                bw.write("\t\tlocation \"" + node.city + "\"");
                 bw.newLine();
                 bw.write("\t]");
                 bw.newLine();

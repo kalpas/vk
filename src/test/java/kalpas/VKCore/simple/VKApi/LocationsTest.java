@@ -3,6 +3,7 @@ package kalpas.VKCore.simple.VKApi;
 import static org.junit.Assert.assertNotNull;
 import kalpas.VK.BaseApiTest;
 import kalpas.VKCore.simple.DO.City;
+import kalpas.VKCore.simple.DO.VKError;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,7 +24,7 @@ public class LocationsTest extends BaseApiTest {
     }
 
     @Test
-    public void test() {
+    public void test() throws VKError {
         // given
 
         // do
@@ -34,14 +35,14 @@ public class LocationsTest extends BaseApiTest {
     }
 
     @Test
-    public void getCityByIdTest() {
+    public void getCityByIdTest() throws VKError {
         // do
         City city = locations.getCityById("280");// expected to be Kharkov
         city = locations.getCityById("280");// expected to be Kharkov
 
         // verify
         assertNotNull(city);
-        assertNotNull(city.name);
+        assertNotNull(city.title);
     }
 
 

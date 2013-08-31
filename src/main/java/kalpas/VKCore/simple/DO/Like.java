@@ -5,10 +5,10 @@ public class Like {
     public String    can_like;
     public String    user_likes;
     public Integer   count;
-    public String[] users;
+    public String[] items;
 
     @Override
     public String toString() {
-        return count + " likes" + (users == null ? "" : ": " + users.toString());
+        return count + " likes" + (items == null ? "" : ": " + items.toString());
     }
 }

@@ -40,7 +40,7 @@ public class LikesTest extends BaseApiTest {
     }
 
     @Test
-    public void likes_getLikes_hp() {
+    public void likes_getLikes_hp() throws VKError {
         Like like = likes.getLikes(LikeObject.post, "1080446", "1466");
 
         assertTrue(like.count > 1);
@@ -50,7 +50,7 @@ public class LikesTest extends BaseApiTest {
     }
 
     @Test
-    public void likes_getLikesRepostOnly_hp() {
+    public void likes_getLikesRepostOnly_hp() throws VKError {
         Like like = likes.getLikes(LikeObject.post, "1080446", "1466", true);
 
         assertEquals(Integer.valueOf(1), like.count);
@@ -60,7 +60,7 @@ public class LikesTest extends BaseApiTest {
     }
 
     @Test
-    public void likes_getLikesMoreThenMax_hp() {
+    public void likes_getLikesMoreThenMax_hp() throws VKError {
         Like like = likes.getLikes(LikeObject.post, "-21642795", "251539");
 
         assertTrue(like.count > 1);
@@ -70,26 +70,26 @@ public class LikesTest extends BaseApiTest {
     }
 
     @Test
-    public void likes_get4Wall_hp() {
+    public void likes_get4Wall_hp() throws VKError {
         List<WallPost> list = wall.getPosts("32013533", true, 500);
         likes.getLikes(list);
 
-        logger.info(list.get(0).likes.users.length);
+        logger.info(list.get(0).likes.items.length);
 
     }
 
     @Test
-    public void likes_get4WallrepostOnly_hp() {
+    public void likes_get4WallrepostOnly_hp() throws VKError {
         List<WallPost> list = wall.getPosts("32013533", true, 500);
         likes.getLikes(list, true);
 
-        logger.info(list.get(0).likes.users.length);
+        logger.info(list.get(0).likes.items.length);
 
     }
 
     @Test(expected = VKError.class)
     @Ignore
-    public void likes_getLikesMoreThenMax_ex() {
+    public void likes_getLikesMoreThenMax_ex() throws VKError {
         likes.getLikes(LikeObject.note, "-21642795", "251539");
     }
 

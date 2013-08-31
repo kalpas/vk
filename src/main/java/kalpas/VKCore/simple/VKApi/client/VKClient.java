@@ -14,9 +14,14 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class VKClient {
 
-    private Logger logger = LogManager.getLogger(VKClient.class);
+    private final String OK     = "OK";
 
-    public InputStream send(String request) {
+    private Logger       logger = LogManager.getLogger(VKClient.class);
+
+    private long         lastRequest = System.currentTimeMillis();
+    private long         offset      = 400L;
+
+    public Result send(String request) {
         return handleResponseInternal(sendInternal(request));
     }
 
@@ -32,11 +37,16 @@ public abstract class VKClient {
         throw new UnsupportedOperationException();
     }
 
-    protected InputStream handleResponseInternal(HttpResponse response) {
+    protected Result handleResponseInternal(HttpResponse response) {
 
         if (response == null) {
             logger.fatal("null http response");
-            return null;
+            return new Result(-1);
+        } else if (!OK.equals(response.getStatusLine().getReasonPhrase())) {
+            Result result = new Result(response.getStatusLine().getStatusCode());
+            result.errMsg = response.getStatusLine().toString();
+            logger.error(result.errMsg);
+            return result;
         }
         HttpEntity entity = response.getEntity();
         InputStream stream = null;
@@ -47,10 +57,26 @@ public abstract class VKClient {
                 logger.error("error ", e);
             }
         }
-        return stream;
+        return new Result(stream);
     }
 
-    public class VKAsyncResult implements Future<InputStream> {
+    protected void sleepIfNeeded() {
+        long now = System.currentTimeMillis();
+        long diff = now - lastRequest;
+        if (diff < offset) {
+            try {
+                logger.debug("sleeping for {} ms", offset - diff);
+                Thread.sleep(offset - diff);
+            } catch (InterruptedException e) {
+                logger.error(e);
+            }
+        } else {
+            logger.debug("no sleep");
+        }
+        lastRequest = System.currentTimeMillis();
+    }
+
+    public class VKAsyncResult implements Future<Result> {
 
         private Future<HttpResponse> future;
 
@@ -62,8 +88,8 @@ public abstract class VKClient {
             this.future = future;
         }
 
-        public InputStream get() {
-            InputStream result = null;
+        public Result get() {
+            Result result = null;
             try {
                 result = handleResponseInternal(future.get());
             } catch (InterruptedException e) {
@@ -82,8 +108,8 @@ public abstract class VKClient {
         }
 
         @Override
-        public InputStream get(long timeout, TimeUnit unit) throws TimeoutException {
-            InputStream result = null;
+        public Result get(long timeout, TimeUnit unit) throws TimeoutException {
+            Result result = null;
             try {
                 result = handleResponseInternal(future.get(timeout, unit));
             } catch (InterruptedException e) {
@@ -105,4 +131,5 @@ public abstract class VKClient {
         }
 
     }
+
 }

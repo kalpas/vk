@@ -12,6 +12,7 @@ import java.util.Set;
 
 import kalpas.VKCore.simple.DO.Comment;
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.DO.WallPost;
 import kalpas.VKCore.simple.DO.WallPost.Attachment;
 import kalpas.VKCore.simple.VKApi.Friends;
@@ -54,14 +55,29 @@ public class WallStats {
     }
 
     public Multimap<User, Map.Entry<EdgeProperties, User>> getRepostsNet(String id, Integer count) {
-        List<WallPost> list;
+        List<WallPost> list = null;
         if (count != null) {
-            list = wall.getPosts(id, true, count);
+            try {
+                list = wall.getPosts(id, true, count);
+            } catch (VKError e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         } else {
-            list = wall.getPosts(id, true);
+            try {
+                list = wall.getPosts(id, true);
+            } catch (VKError e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         // getting reposts only
-        likes.getLikes(list, true);
+        try {
+            likes.getLikes(list, true);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
         Multimap<User, Map.Entry<EdgeProperties, User>> multimap = ArrayListMultimap.create();
 
@@ -73,17 +89,29 @@ public class WallStats {
             Multiset<User> set = map.get(new User(authorId));
             if (set == null) {
                 set = HashMultiset.create();
-                User author = users.get(authorId);
+                User author = null;
+                try {
+                    author = users.get(authorId);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 multimap.put(author, null);
                 map.put(author, set);
             }
 
-            if (post.likes == null || post.likes.users == null) {
+            if (post.likes == null || post.likes.items == null) {
                 continue;
             }
 
-            for (String uid : post.likes.users) {// FIXME NPE
-                User element = users.get(uid);
+            for (String uid : post.likes.items) {// FIXME NPE
+                User element = null;
+                try {
+                    element = users.get(uid);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 set.add(element);
                 multimap.put(element, null);
             }
@@ -108,10 +136,20 @@ public class WallStats {
     }
     
     public Multimap<User, Map.Entry<EdgeProperties, User>> getRepostsNet4Period(String id, Integer days) {
-        List<WallPost> list;
-        list = wall.getPosts4Period(id, true, days);
+        List<WallPost> list = null;
+        try {
+            list = wall.getPosts4Period(id, true, days);
+        } catch (VKError e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         // getting reposts only
-        likes.getLikes(list, true);
+        try {
+            likes.getLikes(list, true);
+        } catch (VKError e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         Multimap<User, Map.Entry<EdgeProperties, User>> multimap = ArrayListMultimap.create();
 
@@ -123,17 +161,29 @@ public class WallStats {
             Multiset<User> set = map.get(new User(authorId));
             if (set == null) {
                 set = HashMultiset.create();
-                User author = users.get(authorId);
+                User author = null;
+                try {
+                    author = users.get(authorId);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 multimap.put(author, null);
                 map.put(author, set);
             }
 
-            if (post.likes == null || post.likes.users == null) {
+            if (post.likes == null || post.likes.items == null) {
                 continue;
             }
 
-            for (String uid : post.likes.users) {// FIXME NPE
-                User element = users.get(uid);
+            for (String uid : post.likes.items) {// FIXME NPE
+                User element = null;
+                try {
+                    element = users.get(uid);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 set.add(element);
                 multimap.put(element, null);
             }
@@ -158,15 +208,35 @@ public class WallStats {
     }
 
     public Multimap<User, Map.Entry<EdgeProperties, User>> getInteractions(String id, Integer count) {
-        List<WallPost> list;
+        List<WallPost> list = null;
         if (count != null) {
-            list = wall.getPosts(id, true, count);
+            try {
+                list = wall.getPosts(id, true, count);
+            } catch (VKError e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         } else {
-            list = wall.getPosts(id, true);
+            try {
+                list = wall.getPosts(id, true);
+            } catch (VKError e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
-        likes.getLikes(list);
-        comments.get(list);
+        try {
+            likes.getLikes(list);
+        } catch (VKError e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            comments.get(list);
+        } catch (VKError e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         Multimap<User, Map.Entry<EdgeProperties, User>> multimap = ArrayListMultimap.create();
 
@@ -178,17 +248,29 @@ public class WallStats {
             Multiset<User> set = likesMap.get(new User(authorId));
             if (set == null) {
                 set = HashMultiset.create();
-                User author = users.get(authorId);
+                User author = null;
+                try {
+                    author = users.get(authorId);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 multimap.put(author, null);
                 likesMap.put(author, set);
             }
 
-            if (post.likes == null || post.likes.users == null) {
+            if (post.likes == null || post.likes.items == null) {
                 continue;
             }
 
-            for (String uid : post.likes.users) {
-                User element = users.get(uid);
+            for (String uid : post.likes.items) {
+                User element = null;
+                try {
+                    element = users.get(uid);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 set.add(element);
                 multimap.put(element, null);
             }
@@ -200,7 +282,13 @@ public class WallStats {
             Multiset<User> set = likesMap.get(new User(authorId));
             if (set == null) {
                 set = HashMultiset.create();
-                User author = users.get(authorId);
+                User author = null;
+                try {
+                    author = users.get(authorId);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 multimap.put(author, null);
                 likesMap.put(author, set);
             }
@@ -210,7 +298,13 @@ public class WallStats {
             }
 
             for (Comment comment : post.comments.comments) {
-                User element = users.get(comment.from_id);
+                User element = null;
+                try {
+                    element = users.get(comment.from_id);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 set.add(element);
                 multimap.put(element, null);
             }
@@ -235,11 +329,26 @@ public class WallStats {
     }
 
     public Multimap<User, Map.Entry<EdgeProperties, User>> getInteractions4Period(String id, Integer days) {
-        List<WallPost> list;
-        list = wall.getPosts4Period(id, true, days);
+        List<WallPost> list = null;
+        try {
+            list = wall.getPosts4Period(id, true, days);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
-        likes.getLikes(list);
-        comments.get(list);
+        try {
+            likes.getLikes(list);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        try {
+            comments.get(list);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
         Multimap<User, Map.Entry<EdgeProperties, User>> multimap = ArrayListMultimap.create();
 
@@ -251,17 +360,29 @@ public class WallStats {
             Multiset<User> set = likesMap.get(new User(authorId));
             if (set == null) {
                 set = HashMultiset.create();
-                User author = users.get(authorId);
+                User author = null;
+                try {
+                    author = users.get(authorId);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 multimap.put(author, null);
                 likesMap.put(author, set);
             }
 
-            if (post.likes == null || post.likes.users == null) {
+            if (post.likes == null || post.likes.items == null) {
                 continue;
             }
 
-            for (String uid : post.likes.users) {
-                User element = users.get(uid);
+            for (String uid : post.likes.items) {
+                User element = null;
+                try {
+                    element = users.get(uid);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 set.add(element);
                 multimap.put(element, null);
             }
@@ -273,7 +394,13 @@ public class WallStats {
             Multiset<User> set = likesMap.get(new User(authorId));
             if (set == null) {
                 set = HashMultiset.create();
-                User author = users.get(authorId);
+                User author = null;
+                try {
+                    author = users.get(authorId);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 multimap.put(author, null);
                 likesMap.put(author, set);
             }
@@ -283,7 +410,13 @@ public class WallStats {
             }
 
             for (Comment comment : post.comments.comments) {
-                User element = users.get(comment.from_id);
+                User element = null;
+                try {
+                    element = users.get(comment.from_id);
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 set.add(element);
                 multimap.put(element, null);
             }
@@ -310,15 +443,35 @@ public class WallStats {
         String separator = "===================";
 
         // FIXME duplicated code
-        List<WallPost> list;
+        List<WallPost> list = null;
         if (count != null) {
-            list = wall.getPosts(id, true, count);
+            try {
+                list = wall.getPosts(id, true, count);
+            } catch (VKError e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         } else {
-            list = wall.getPosts(id, true);
+            try {
+                list = wall.getPosts(id, true);
+            } catch (VKError e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
-        likes.getLikes(list);
-        comments.get(list);
+        try {
+            likes.getLikes(list);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        try {
+            comments.get(list);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
         List<WallPost> groupPosts = new ArrayList<>();
         List<WallPost> userPost = new ArrayList<>();
@@ -329,10 +482,20 @@ public class WallStats {
         for (WallPost post : list) {
             if (post.signer_id != null) {
                 groupPosts.add(post);
-                adminStuff.add(users.get(post.signer_id));
+                try {
+                    adminStuff.add(users.get(post.signer_id));
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             } else {
                 userPost.add(post);
-                activeUsers.add(users.get(post.from_id));
+                try {
+                    activeUsers.add(users.get(post.from_id));
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -360,11 +523,26 @@ public class WallStats {
         String separator = "===================";
 
         // FIXME duplicated code
-        List<WallPost> list;
-        list = wall.getPosts4Period(id, true, days);
+        List<WallPost> list = null;
+        try {
+            list = wall.getPosts4Period(id, true, days);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
-        likes.getLikes(list);
-        comments.get(list);
+        try {
+            likes.getLikes(list);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        try {
+            comments.get(list);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
         List<WallPost> groupPosts = new ArrayList<>();
         List<WallPost> userPost = new ArrayList<>();
@@ -375,10 +553,20 @@ public class WallStats {
         for (WallPost post : list) {
             if (post.signer_id != null) {
                 groupPosts.add(post);
-                adminStuff.add(users.get(post.signer_id));
+                try {
+                    adminStuff.add(users.get(post.signer_id));
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             } else {
                 userPost.add(post);
-                activeUsers.add(users.get(post.from_id));
+                try {
+                    activeUsers.add(users.get(post.from_id));
+                } catch (VKError e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         }
 

@@ -1,8 +1,5 @@
 package kalpas.VKCore.simple.VKApi;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,19 +8,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.DO.WallPost;
+import kalpas.VKCore.simple.VKApi.client.Result;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -54,40 +52,40 @@ public class Wall {
         this.client = client;
     }
 
-    public List<WallPost> getPosts(String ownerId) {
+    public List<WallPost> getPosts(String ownerId) throws VKError {
         return getPosts(ownerId, false);
     }
 
-    public List<WallPost> getPosts(String ownerId, int count) {
+    public List<WallPost> getPosts(String ownerId, int count) throws VKError {
         return getPosts(ownerId, false, count);
     }
 
-    public List<WallPost> getPosts(String ownerId, boolean isGroup, int count) {
+    public List<WallPost> getPosts(String ownerId, boolean isGroup, int count) throws VKError {
         List<WallPost> list = new ArrayList<>();
-        InputStream stream;
-        Entry<Integer, List<WallPost>> result;
+        Result result;
+        Entry<Integer, List<WallPost>> posts;
 
         if (count <= max_count) {
-            stream = client.send(buildRequest(ownerId, isGroup, 0, count));
-            result = parseWallPosts(stream);
-            list.addAll(result.getValue());
+            result = client.send(buildRequest(ownerId, isGroup, 0, count));
+            posts = parseWallPosts(result);
+            list.addAll(posts.getValue());
 
         } else {
-            stream = client.send(buildRequest(ownerId, isGroup));
-            result = parseWallPosts(stream);
-            list.addAll(result.getValue());
+            result = client.send(buildRequest(ownerId, isGroup));
+            posts = parseWallPosts(result);
+            list.addAll(posts.getValue());
             list.addAll(getRemainigPosts(ownerId, isGroup, count));
         }
         return list;
     }
 
-    public List<WallPost> getPosts(String ownerId, boolean isGroup) {
+    public List<WallPost> getPosts(String ownerId, boolean isGroup) throws VKError {
         List<WallPost> list = new ArrayList<>();
 
-        InputStream stream = client.send(buildRequest(ownerId, isGroup));
-        Entry<Integer, List<WallPost>> result = parseWallPosts(stream);
-        list.addAll(result.getValue());
-        Integer totalCount = result.getKey();
+        Result result = client.send(buildRequest(ownerId, isGroup));
+        Entry<Integer, List<WallPost>> posts = parseWallPosts(result);
+        list.addAll(posts.getValue());
+        Integer totalCount = posts.getKey();
 
         if (totalCount > max_count) {
             list.addAll(getRemainigPosts(ownerId, isGroup, totalCount));
@@ -96,7 +94,7 @@ public class Wall {
 
     }
 
-    private List<WallPost> getRemainigPosts(String ownerId, boolean isGroup, Integer totalCount) {
+    private List<WallPost> getRemainigPosts(String ownerId, boolean isGroup, Integer totalCount) throws VKError {
         List<WallPost> list = new ArrayList<>();
         List<VKAsyncResult> futures = new ArrayList<>();
 
@@ -121,74 +119,75 @@ public class Wall {
         return list;
     }
 
-    private Map.Entry<Integer, List<WallPost>> parseWallPosts(InputStream result) {
+    private Map.Entry<Integer, List<WallPost>> parseWallPosts(Result result) throws VKError {
+        VKError error;
+        if (result.errCode != null) {
+            error = new VKError(result.errMsg);
+            throw error;
+        }
+
         List<WallPost> list = new ArrayList<>();
         int wallPostsCount = 0;
+        String json = null;
+        JsonObject response = null;
         try {
-            JsonObject response = parser.parse(new InputStreamReader(result, "UTF-8")).getAsJsonObject();
-            JsonArray posts = response.getAsJsonArray("response");
-            if (posts != null) {
-                Iterator<JsonElement> iterator = posts.iterator();
-                wallPostsCount = iterator.hasNext() ? iterator.next().getAsInt() : 0;
-                while (iterator.hasNext()) {
-                    try {
-                        list.add(gson.fromJson(iterator.next(), WallPost.class));
-                    } catch (JsonSyntaxException | NullPointerException e) {
-                        logger.error("exception while parsing wallpost object", e);
-                    }
+            json = IOUtils.toString(result.stream, "UTF-8");
+            response = parser.parse(json).getAsJsonObject().getAsJsonObject("response");
+        } catch (Exception e1) {
+            logger.error(e1);
+            error = new VKError(e1.toString());
+            throw error;
+        }
+        if (response != null) {
+            wallPostsCount = response.getAsJsonPrimitive("count").getAsInt();
+            Iterator<JsonElement> iterator = response.getAsJsonArray("items").iterator();
+            while (iterator.hasNext()) {
+                try {
+                    list.add(gson.fromJson(iterator.next(), WallPost.class));
+                } catch (JsonSyntaxException | NullPointerException e) {
+                    String message = "exception while parsing wallpost object";
+                    logger.error(message, e);
+                    throw new VKError(message);
                 }
-            } else {
-                logger.error("error " + response.toString());
             }
-        } catch (JsonSyntaxException | JsonIOException e) {
-            logger.error("exception while parsing json", e);
-        } catch (IllegalStateException e) {
-            logger.error("exception while parsing json", e);
-        } catch (UnsupportedEncodingException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+        } else {
+            error = VKError.fromJSON(json);
         }
 
         return new AbstractMap.SimpleEntry<Integer, List<WallPost>>(wallPostsCount, list);
     }
 
-    public int getPostsCount(String ownerId) {
+    public int getPostsCount(String ownerId) throws VKError {
         return getPostsCount(ownerId, false);
     }
 
-    public int getPostsCount(String ownerId, boolean isGroup) {
-        InputStream stream = client.send(buildRequest(ownerId, isGroup, 0, 1));
-        Entry<Integer, List<WallPost>> result = parseWallPosts(stream);
-        result.getKey();
+    public int getPostsCount(String ownerId, boolean isGroup) throws VKError {
+        Result result = client.send(buildRequest(ownerId, isGroup, 0, 1));
+        Entry<Integer, List<WallPost>> posts = parseWallPosts(result);
 
-        return result.getKey() == null ? 0 : result.getKey();
+        return posts.getKey() == null ? 0 : posts.getKey();
     }
 
-    public List<WallPost> getPosts4Period(String ownerId, boolean isGroup, int days) {
+    public List<WallPost> getPosts4Period(String ownerId, boolean isGroup, int days) throws VKError {
         List<WallPost> list = new ArrayList<>();
-        InputStream stream;
-        Entry<Integer, List<WallPost>> result;
+        Entry<Integer, List<WallPost>> posts;
         DateTime now = new DateTime();
 
-        // Sleep.sleep();
-        // stream = client.send(buildRequest(ownerId, isGroup, 0, max_count));
-        // result = parseWallPosts(stream);
-        // list.addAll(result.getValue());
+        Result result;
 
-        
         int totalCount = max_count;
         DateTime firstPost = DateTime.now();
         for (int offset = 0; offset < totalCount && !now.minusDays(days).isAfter(firstPost); offset += max_count) {
-           stream = client.send(buildRequest(ownerId, isGroup, offset));
-           result = parseWallPosts(stream);
-           list.addAll(result.getValue());
-           firstPost = new DateTime(Long.valueOf(list.get(list.size() - 1).date) * 1000L);
-            totalCount = result.getKey();
+            result = client.send(buildRequest(ownerId, isGroup, offset));
+            posts = parseWallPosts(result);
+            list.addAll(posts.getValue());
+            firstPost = new DateTime(Long.valueOf(list.get(list.size() - 1).date) * 1000L);
+            totalCount = posts.getKey();
         }
-        
+
         Iterator<WallPost> iterator = list.iterator();
         WallPost post = null;
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             post = iterator.next();
             if (new DateTime(Long.valueOf(post.date) * 1000L).isBefore(now.minusDays(days))) {
                 iterator.remove();
@@ -196,43 +195,6 @@ public class Wall {
         }
 
         return list;
-    }
-
-    @Deprecated
-    public List<WallPost> get(String ownerId) {
-        List<WallPost> wallPosts = new ArrayList<>();
-        // int wallPostsCount = MAX_GET_COUNT;
-        //
-        // params.put("count", MAX_GET_COUNT.toString());
-        // params.put("offset", "0");
-        // wallPostsCount = get(ownerId, wallPosts);
-        // if (count != null && count != 0) {
-        // wallPostsCount = count;
-        // }
-        //
-        // List<VKAsyncResult> futures = new ArrayList<>();
-        // for (Integer step = MAX_GET_COUNT; step < wallPostsCount; step +=
-        // MAX_GET_COUNT) {
-        // params.put("count", MAX_GET_COUNT.toString());
-        // params.put("offset", step.toString());
-        // futures.add(client.sendAsync(get + "?" + buildRequest(ownerId)));
-        // }
-        //
-        // VKAsyncResult future;
-        // while (!futures.isEmpty()) {
-        // Iterator<VKAsyncResult> iterator = futures.iterator();
-        // while (iterator.hasNext()) {
-        // future = iterator.next();
-        // if (!future.isDone()) {
-        // continue;
-        // }
-        // iterator.remove();
-        // get(wallPosts, future.get());
-        // }
-        // }
-
-        return wallPosts;
-
     }
 
     private String buildRequest(String ownerId, boolean isGroup) {
@@ -250,24 +212,4 @@ public class Wall {
         params.put("offset", offset.toString());
         return get + "?" + joiner.join(params);
     }
-
-    // owner, others,all FIXME
-    @Deprecated
-    public Wall addFilter(String filter) {
-        // params.put("filter", filter);
-        return this;
-    }
-
-    @Deprecated
-    public Wall extended() {
-        // params.put("extended", "1");
-        return this;
-    }
-
-    @Deprecated
-    public Wall addCount(int count) {
-        // this.count = count;
-        return this;
-    }
-
 }

@@ -7,6 +7,7 @@ import java.util.List;
 
 import kalpas.VK.BaseApiTest;
 import kalpas.VKCore.simple.DO.Comment;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.DO.WallPost;
 import kalpas.VKCore.simple.VKApi.Wall;
 import kalpas.VKCore.simple.VKApi.WallComments;
@@ -35,7 +36,7 @@ public class WallCommentsTest extends BaseApiTest {
     }
 
     @Test
-    public void getWallComments_hp() {
+    public void getWallComments_hp() throws VKError {
         List<WallPost> list = wall.getPosts(selfUid, 5);
         assertNotNull(list);
         assertFalse(list.isEmpty());

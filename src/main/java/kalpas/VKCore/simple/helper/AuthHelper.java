@@ -22,6 +22,8 @@ import com.google.inject.name.Named;
 @Singleton
 public class AuthHelper {
 
+    private static final String PERMISSIONS = "friends,wall,groups,messages";
+
     private final Logger  logger = LogManager.getLogger(AuthHelper.class);
 
     private final String  auth   = "oauth.vk.com";
@@ -105,7 +107,7 @@ public class AuthHelper {
 
         URIBuilder builder = new URIBuilder();
         builder.setScheme("https").setHost(auth).setPath("/authorize").setParameter("client_id", appId)
-                .setParameter("scope", "friends,wall,groups" + (!https ? ",nohttps" : ""))
+                .setParameter("scope", PERMISSIONS + (!https ? ",nohttps" : ""))
                 .setParameter("redirect_uri", "http://oauth.vk.com/blank.html").addParameter("display", "popup")
                 .addParameter("response_type", "token");
         String result = null;

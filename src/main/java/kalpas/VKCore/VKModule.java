@@ -20,8 +20,8 @@ public class VKModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(VKClient.class).to(VKHttpClient.class);
-        bind(Boolean.class).annotatedWith(Names.named("isHttps")).toInstance(false);
+        bind(VKClient.class).to(VKHttpsClient.class);
+        bind(Boolean.class).annotatedWith(Names.named("isHttps")).toInstance(true);
         bind(Gson.class).in(Singleton.class);
         bind(JsonParser.class).in(Singleton.class);
         // Sleep.interval = 0L;

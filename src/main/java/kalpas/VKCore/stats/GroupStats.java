@@ -42,7 +42,12 @@ public class GroupStats {
 
         logger.debug("members " + members.size());
 
-        members = users.get(members);
+        try {
+            members = users.get(members);
+        } catch (VKError e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         Multimap<User, User> memberNetwork = ArrayListMultimap.<User, User> create();
 
@@ -51,12 +56,7 @@ public class GroupStats {
             memberNetwork.put(member, null);
 
             List<User> memberFriends = null;
-            try {
-                memberFriends = friends.get(member);
-            } catch (VKError e) {
-                // FIXME add code to recover from error
-                e.printStackTrace();
-            }
+            memberFriends = friends.get(member);
             if (memberFriends == null) {
                 continue;
             }

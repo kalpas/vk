@@ -1,28 +1,28 @@
 package kalpas.VKCore.simple.VKApi;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import kalpas.VKCore.simple.DO.Comment;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.DO.WallPost;
+import kalpas.VKCore.simple.VKApi.client.Result;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
@@ -49,7 +49,7 @@ public class WallComments {
         this.client = client;
     }
 
-    public List<WallPost> get(List<WallPost> posts) {
+    public List<WallPost> get(List<WallPost> posts) throws VKError {
 
         Map<WallPost, VKAsyncResult> futures = new HashMap<>();
         for (WallPost post : posts) {
@@ -80,51 +80,61 @@ public class WallComments {
         return posts;
     }
 
-    public List<Comment> get(String ownerId, String postId) {
+    public List<Comment> get(String ownerId, String postId) throws VKError {
         List<Comment> comments = new ArrayList<>();
 
-        InputStream stream = client.send(buildRequest(postId, ownerId));
-        get(postId, ownerId, comments, stream);
+        Result result = client.send(buildRequest(postId, ownerId));
+        get(postId, ownerId, comments, result);
 
         return comments;
     }
 
-    private void get(String postId, String ownerId, List<Comment> comments, InputStream stream) {
+    private void get(String postId, String ownerId, List<Comment> comments, Result result) throws VKError {
         Integer commentsCount;
-        commentsCount = getChunk(stream, comments);
+        commentsCount = getChunk(result, comments);
 
         if (notAllCommentsGot(comments, commentsCount)) {
             getRest(postId, ownerId, comments, commentsCount);
         }
     }
 
-    private void getRest(String postId, String ownerId, List<Comment> comments, Integer commentsCount) {
-        InputStream stream;
+    private void getRest(String postId, String ownerId, List<Comment> comments, Integer commentsCount) throws VKError {
+        Result result;
         for (Integer offset = MAX_COMMENTS; offset < commentsCount; offset += MAX_COMMENTS) {
-            stream = client.send(buildRequest(postId, ownerId, offset, MAX_COMMENTS));
-            getChunk(stream, comments);
+            result = client.send(buildRequest(postId, ownerId, offset, MAX_COMMENTS));
+            getChunk(result, comments);
         }
     }
 
-    private Integer getChunk(InputStream stream, List<Comment> comments) {
+    private Integer getChunk(Result result, List<Comment> comments) throws VKError {
         Integer commentsCount = null;
+        if(result.errCode != null){
+            throw new VKError(result.errMsg);
+        }
         try {
-            JsonObject json = parser.parse(new InputStreamReader(stream,"UTF-8")).getAsJsonObject();
-            JsonArray response = json.getAsJsonArray("response");
-            if (response != null) {
-                Iterator<JsonElement> iterator = response.iterator();
-                commentsCount = iterator.hasNext() ? iterator.next().getAsInt() : 0;
-                while (iterator.hasNext()) {
-                    comments.add(gson.fromJson(iterator.next(), Comment.class));
-                }
-            } else {
-                logger.error("error " + json.toString());
-            }
+            String json = IOUtils.toString(result.stream, "UTF-8");
+            GetCommentsResponse fromJson = gson.fromJson(json, GetCommentsResponse.class);
+            commentsCount = fromJson.response.count;
+            comments.addAll(Arrays.asList(fromJson.response.items));
+            // JsonObject json = parser.parse().getAsJsonObject();
+            // JsonArray response = json.getAsJsonArray("response");
+            // if (response != null) {
+            // Iterator<JsonElement> iterator = response.iterator();
+            // commentsCount = iterator.hasNext() ? iterator.next().getAsInt() :
+            // 0;
+            // while (iterator.hasNext()) {
+            // comments.add(gson.fromJson(iterator.next(), Comment.class));
+            // }
+            // } else {
+            // logger.error("error " + json.toString());
+            // }
         } catch (JsonSyntaxException | JsonIOException e) {
             logger.error("exception while parsing json", e);
         } catch (UnsupportedEncodingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        } catch (IOException e) {
+            logger.error(e);
         }
         return commentsCount;
     }
@@ -153,16 +163,12 @@ public class WallComments {
         return get + "?" + joiner.join(params);
     }
 
-    @Deprecated
-    public WallComments addSort(String sort) {
-        // params.put("sort", sort);
-        return this;
-    }
+    private class GetCommentsResponse {
+        public Comments response;
 
-    @Deprecated
-    public WallComments addNeedLikes(Integer needLikes) {
-        // params.put("need_likes", needLikes.toString());
-        return this;
+        private class Comments {
+            public int       count;
+            public Comment[] items;
+        }
     }
-
 }

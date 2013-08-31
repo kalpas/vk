@@ -3,6 +3,7 @@ package kalpas.VKCore.simple.DO;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class UserRelation {
 
     public User user;

@@ -25,15 +25,21 @@ public class FriendStats {
     private Users   users;
 
     public Multimap<User, User> getNetwork(String uid, boolean withMe) {
-        User me = users.get(uid);
-        List<User> friendList = null;
-        try{
-            friendList = friends.get(uid);
-        }catch(VKError e){
-            logger.error(e);
-            return null;
+        User me = null;
+        try {
+            me = users.get(uid);
+        } catch (VKError e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        friendList = users.get(friendList);
+        List<User> friendList = null;
+        friendList = friends.get(uid);
+        try {
+            friendList = users.get(friendList);
+        } catch (VKError e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         
         Multimap<User, User> network = ArrayListMultimap.create();
         if (withMe) {
@@ -44,12 +50,7 @@ public class FriendStats {
 
         List<User> list = null;
         for (User friend : friendList) {
-            try {
-                list = friends.get(friend);
-            } catch (VKError e) {
-                logger.error(e);
-                return null;
-            }
+            list = friends.get(friend);
             for (User user : list) {
                 if (friendList.contains(user)) {
                     user = list.get(list.indexOf(user));// TODO consider smth

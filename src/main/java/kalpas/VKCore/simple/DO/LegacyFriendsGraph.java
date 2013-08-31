@@ -19,7 +19,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.inject.Inject;
 
-public class NewFriendsGraph {
+public class LegacyFriendsGraph {
 
     public SetMultimap<UserRelation, User> edges  = HashMultimap.create();
 
@@ -36,29 +36,28 @@ public class NewFriendsGraph {
     @Inject
     private WallComments                   WALLCOMMENTS;
 
-    Logger                                 logger = LogManager.getLogger(NewFriendsGraph.class);
+    Logger                                 logger = LogManager.getLogger(LegacyFriendsGraph.class);
 
-    public NewFriendsGraph() {
+    public LegacyFriendsGraph() {
     }
 
     public void getMyFriends() {
-        USERS.addFields("uid", "first_name", "last_name", "nickname", "screen_name", "sex", "bdate", "city", "country",
-                "timezone", "photo", "photo_medium", "photo_big", "has_mobile", "contacts", "education", "online",
-                "counters", "lists", "can_post", "can_see_all_posts", "activity", "last_seen", "relation", "exports",
-                "wall_comments", "connections", "interests", "movies", "tv", "books", "games", "about", "domain");
-        WALL.addCount(300);
-        LIKES.addType("post");
-
-        User self = USERS.get(selfId);
-        List<User> friends = null;
-        try {// FIXME fix later
-            friends = FRIENDS.get(self);
-        } catch (VKError e) {
+        User self = null;
+        try {
+            self = USERS.get(selfId);
+        } catch (VKError e2) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            e2.printStackTrace();
         }
+        List<User> friends = null;
+        friends = FRIENDS.get(self);
         logger.info(friends.size() + " friends");
-        friends = USERS.get(friends);
+        try {
+            friends = USERS.get(friends);
+        } catch (VKError e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
 
         logger.debug("got friends");
 
@@ -66,11 +65,25 @@ public class NewFriendsGraph {
         int i = 0;
         int size = friends.size();
         for (User user : friends) {
-            List<WallPost> wall = WALL.get(user.uid);
+            List<WallPost> wall = null;
+            try {
+                wall = WALL.getPosts(user.uid);
+            } catch (VKError e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
             logger.debug("got wall");
-            wall = LIKES.get(wall);
+            try {
+                LIKES.getLikes(wall);
+            } catch (VKError e) {
+                e.printStackTrace();
+            }
             logger.debug("got likes");
-            wall = WALLCOMMENTS.get(wall);
+            try {
+                wall = WALLCOMMENTS.get(wall);
+            } catch (VKError e) {
+                e.printStackTrace();
+            }
             logger.debug("got commets");
             wallPosts.put(user, wall);
             logger.debug(i + "//" + size);
@@ -146,10 +159,10 @@ public class NewFriendsGraph {
 
     private void countLikes(Map<String, Map<String, List<WallPost>>> posts, WallPost post) {
         Like likes = post.likes;
-        if (likes == null || likes.users == null) {
+        if (likes == null || likes.items == null) {
             return;
         }
-        for (String uid : likes.users) {
+        for (String uid : likes.items) {
             getOrCreate(posts, uid, post.to_id).add(post);
 
         }

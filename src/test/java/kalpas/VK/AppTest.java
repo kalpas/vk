@@ -46,8 +46,8 @@ public class AppTest extends TestCase {
 
     public void test1() {
         User a, b;
-        a = b = new User();
-        a.uid = "uid";
+        a = new User("uid");
+        b = new User(null);
 
         Function<User, String> getUid = new Function<User, String>() {
             @Override

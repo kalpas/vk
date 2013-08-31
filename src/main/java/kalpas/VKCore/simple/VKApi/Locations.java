@@ -1,14 +1,16 @@
 package kalpas.VKCore.simple.VKApi;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
 import kalpas.VKCore.simple.DO.City;
+import kalpas.VKCore.simple.DO.VKError;
+import kalpas.VKCore.simple.VKApi.client.Result;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,7 +30,7 @@ public class Locations {
     protected Logger          logger = LogManager.getLogger(getClass());
     
     private Map<String, City> cities = new HashMap<String, City>();
-    
+
     @Inject
     private MapJoiner          joiner;
     @Inject
@@ -41,38 +43,75 @@ public class Locations {
         this.client = client;
     }
     
-    public City[] getCities(String countryCode) {
-        InputStream stream = client.send("places.getCities" + "?" + "country=" + countryCode);
-        City[] result = null;
+    public City[] getCities(String countryCode) throws VKError {
+        Result result = client.send("database.getCities" + "?" + "country_id=" + countryCode);
+        if (result.errCode != null) {
+            VKError error = new VKError(result.errMsg);
+            throw error;
+        }
+
+        City[] cities = null;
         try {
-            result = gson.fromJson(new InputStreamReader(stream, "UTF-8"), GetCitiesResponse.class).response;
+            String json = IOUtils.toString(result.stream, "UTF-8");
+            GetCitiesResponse fromJson = gson.fromJson(json, GetCitiesResponse.class);
+            if (fromJson.response == null) {
+                VKError error = VKError.fromJSON(json);
+                throw error;
+            }
+            cities = fromJson.response.items;
         } catch (JsonSyntaxException | JsonIOException | UnsupportedEncodingException e) {
             logger.error(e);
+        } catch (IOException e) {
+            logger.error(e);
         }
-        return result;
+        return cities;
     }
 
-    public City getCityById(String cid) {
+    public City getCityById(String cid) throws VKError {
         City city = null;
-        if ((city = cities.get(cid)) == null) {
+        if (cid != null && !"0".equals(cid) && (city = cities.get(cid)) == null) {
             city = loadCityById(cid);
             cities.put(cid, city);
         }
         return city;
     }
 
-    private City loadCityById(String cid) {
-        InputStream stream = client.send("places.getCityById" + "?" + "cids=" + cid);
-        City[] response = null;
+    private City loadCityById(String cid) throws VKError {
+        Result result = client.send("database.getCitiesById" + "?" + "city_ids=" + cid);
+        if (result.errCode != null) {
+            VKError error = new VKError(result.errMsg);
+            throw error;
+        }
+
+        GetCitiesByIdResponse fromJson = null;
         try {
-            response = gson.fromJson(new InputStreamReader(stream, "UTF-8"), GetCitiesResponse.class).response;
+            String json = IOUtils.toString(result.stream, "UTF-8");
+            fromJson = gson.fromJson(json, GetCitiesByIdResponse.class);
+            if (fromJson.response == null) {
+                VKError error = VKError.fromJSON(json);
+                throw error;
+            } else if (fromJson.response.length == 0) {
+                throw new VKError("no such city");
+            }
         } catch (JsonSyntaxException | JsonIOException | UnsupportedEncodingException e) {
             logger.error(e);
+        } catch (IOException e) {
+            logger.error(e);
         }
-        return (response == null || response.length == 0) ? null : response[0];
+        return fromJson.response[0];
     }
 
     private class GetCitiesResponse {
+        public Cities response;
+
+        public class Cities {
+            @SuppressWarnings("unused")
+            public int    count;
+            public City[] items;
+        }
+    }
+
+    private class GetCitiesByIdResponse {
         public City[] response;
     }
 }

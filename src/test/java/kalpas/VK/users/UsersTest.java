@@ -8,6 +8,7 @@ import java.util.List;
 
 import kalpas.VK.BaseApiTest;
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.VKApi.Users;
 
 import org.junit.After;
@@ -30,7 +31,7 @@ public class UsersTest extends BaseApiTest {
     }
 
     @Test
-    public void users_getByString_hp() {
+    public void users_getByString_hp() throws VKError {
 
         User me = users.get(selfUid);
 
@@ -38,7 +39,7 @@ public class UsersTest extends BaseApiTest {
     }
 
     @Test
-    public void users_getByUser_hp() {
+    public void users_getByUser_hp() throws VKError {
 
         User me = users.get(new User(selfUid));
 
@@ -46,35 +47,9 @@ public class UsersTest extends BaseApiTest {
     }
 
     @Test
-    public void users_getList_hp() {
+    public void users_getList_hp() throws VKError {
 
         List<User> list = users.get(Arrays.asList(new User(selfUid), new User("1")));
-
-        assertNotNull(list);
-        assertFalse(list.isEmpty());
-
-        for (User user : list) {
-            assertLoaded(user);
-        }
-    }
-
-    @Test
-    public void users_batchGetList_hp() {
-
-        List<User> list = users.batchGet(Arrays.asList(new User(selfUid), new User("1")));
-
-        assertNotNull(list);
-        assertFalse(list.isEmpty());
-
-        for (User user : list) {
-            assertLoaded(user);
-        }
-    }
-
-    @Test
-    public void users_batchGetStrings_hp() {
-
-        List<User> list = users.batchGet(selfUid, "1");
 
         assertNotNull(list);
         assertFalse(list.isEmpty());

@@ -11,7 +11,7 @@ public class User implements Serializable {
      */
     private static final long serialVersionUID = -4504087520562844466L;
 
-    public String             uid;
+    public final String       uid;
     public String             first_name;
     public String             last_name;
     public String             nickname;
@@ -64,9 +64,6 @@ public class User implements Serializable {
     public String             photo_medium;
     public String             photo_big;
     public String             domain;
-
-    public User() {
-    }
 
     public User(String uid) {
         this.uid = uid;

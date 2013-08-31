@@ -1,10 +1,8 @@
 package kalpas.VKCore.simple.VKApi;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -12,16 +10,17 @@ import java.util.Map;
 
 import kalpas.VKCore.simple.DO.City;
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.DO.VKError;
+import kalpas.VKCore.simple.VKApi.client.Result;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Joiner.MapJoiner;
-import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -33,8 +32,6 @@ import com.google.inject.Inject;
 public class Users {
 
     private static final String    requstName     = "users.get";
-
-    private final List<String>     allowedCases   = Arrays.asList("nom", "gen", "dat", "acc", "ins", "abl");
 
     @Inject
     private MapJoiner              joiner;
@@ -50,13 +47,6 @@ public class Users {
     @Inject
     private Locations              locations;
 
-    private Function<User, String> getUid         = new Function<User, String>() {
-                                                      @Override
-                                                      public String apply(User input) {
-                                                          return input.uid;
-                                                      }
-                                                  };
-
     public final static String[]   ALL_FIELDS     = { "uid", "first_name", "last_name", "nickname", "screen_name",
             "sex", "bdate", "city", "country", "timezone", "photo", "photo_medium", "photo_big", "has_mobile",
             "contacts", "education", "online", "counters", "lists", "can_post", "can_see_all_posts", "activity",
@@ -70,21 +60,18 @@ public class Users {
         this.client = vkClient;
     }
 
-    public User get(String uid) {
+    public User get(String uid) throws VKError {
         User user = new User(uid);
         return get(user);
     }
 
-    public User get(User user) {
-        InputStream stream = client.send(buildRequest(user.uid));
-        List<User> users = getUsers(stream);
-        if (!users.isEmpty()) {// FIXME smell
-            user = users.get(0);
-        }
-        return user;
+    public User get(User user) throws VKError {
+        Result result = client.send(buildRequest(user.uid));
+        List<User> users = getUsers(result);
+        return users.get(0);
     }
 
-    public List<User> get(List<User> users) {
+    public List<User> get(List<User> users) throws VKError {
         Map<User, VKAsyncResult> futures = new HashMap<User, VKClient.VKAsyncResult>();
         for (User user : users) {
             futures.put(user, client.sendAsync(buildRequest(user.uid)));
@@ -113,57 +100,49 @@ public class Users {
         return users;
     }
 
-    public List<User> batchGet(List<User> users) {
-        if (users.size() > 999) {
-            throw new IllegalArgumentException("amount shouldn't exceed 1000 per call");
-        }
-
-        String uids = Joiner.on(",").skipNulls().join(Iterables.transform(users, getUid));
-        InputStream stream = client.send(buildRequest(uids));
-
-        return getUsers(stream);
-    }
-
-    public List<User> batchGet(String... uids) {
-        if (uids.length > 999) {
-            throw new IllegalArgumentException("amount shouldn't exceed 1000 per call");
-        }
-
-        InputStream stream = client.send(buildRequest(Joiner.on(",").skipNulls().join(uids)));
-        return getUsers(stream);
-    }
-
     // ********************** PRIVATE **********************
 
-    private List<User> getUsers(InputStream stream) {
-        List<User> users = new ArrayList<>();
-        if (stream == null) {
-            return users;
+    private List<User> getUsers(Result result) throws VKError {
+        VKError error;
+        if (result.errCode != null) {
+            error = new VKError(result.errMsg);
+            throw error;
         }
+
+        List<User> users = new ArrayList<>();
         JsonArray array = null;
-        // FIXME smells here i guess
+        String json = null;
         try {
-            array = parser.parse(new InputStreamReader(stream,"UTF-8")).getAsJsonObject().getAsJsonArray("response");
+            json = IOUtils.toString(result.stream, "UTF-8");
+            array = parser.parse(json).getAsJsonObject().getAsJsonArray("response");
         } catch (IllegalStateException | JsonIOException | JsonSyntaxException | UnsupportedEncodingException e) {
             logger.error("error parsing ", e);
+            error = new VKError(e.toString());
+            throw error;
+        } catch (IOException e) {
+            logger.error(e);
         }
+
         if (array != null) {
             Iterator<JsonElement> iterator = array.iterator();
             while (iterator.hasNext()) {
                 User user = getUser(iterator.next());
                 users.add(user);
             }
+        } else {
+            error = VKError.fromJSON(json);
+            throw error;
         }
         return users;
     }
 
-    private User getUser(JsonElement element) {
+    private User getUser(JsonElement element) throws VKError {
         User user = null;
         try {
             user = gson.fromJson(element, User.class);
             City city = locations.getCityById(user.city);
             if (city != null)
-                user.city = city.name;
+                user.city = city.title;
         } catch (JsonSyntaxException e) {
             logger.error("exception while parsing json", e);
         }
@@ -178,35 +157,9 @@ public class Users {
 
     protected String buildRequest(String uid, String[] fields) {
         Map<String, String> params = new HashMap<>();
-        params.put("uids", uid);
+        params.put("user_ids", uid);
         params.put("fields", Joiner.on(",").skipNulls().join(fields));
         return requstName + "?" + joiner.join(params);
-    }
-
-    @Deprecated
-    public Users addFields(String... fields) {
-        if (fields.length == 0) {
-            throw new IllegalArgumentException("should pass at least one field name");
-        }
-
-        // params.put("fields", Joiner.on(",").skipNulls().join(fields));
-        return this;
-    }
-
-    /**
-     * 
-     * @param nameCase
-     *            could be one of "nom", "gen", "dat", "acc", "ins", "abl"
-     * @return
-     */
-    @Deprecated
-    public Users addNameCase(String nameCase) {
-        if (!allowedCases.contains(nameCase)) {
-            throw new IllegalArgumentException(nameCase + " nameCase is illegal");
-        }
-
-        // params.put("name_case", nameCase);
-        return this;
     }
 
 }

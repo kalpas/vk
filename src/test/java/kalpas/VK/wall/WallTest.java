@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.List;
 
 import kalpas.VK.BaseApiTest;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.DO.WallPost;
 import kalpas.VKCore.simple.VKApi.Wall;
 
@@ -34,7 +35,7 @@ public class WallTest extends BaseApiTest {
     }
 
     @Test
-    public void wall_get_hp() {
+    public void wall_get_hp() throws VKError {
 
         // 48469829
         logger.error("separator");
@@ -52,7 +53,7 @@ public class WallTest extends BaseApiTest {
     }
 
     @Test
-    public void wall_getWcount_hp() {
+    public void wall_getWcount_hp() throws VKError {
 
         logger.error("separator");
         List<WallPost> list = wall.getPosts("48282897", true, 10);
@@ -69,7 +70,7 @@ public class WallTest extends BaseApiTest {
     }
 
     @Test
-    public void wall_get1_hp() {
+    public void wall_get1_hp() throws VKError {
 
         logger.error("separator");
         List<WallPost> list = wall.getPosts("1080446", 20);
@@ -90,7 +91,7 @@ public class WallTest extends BaseApiTest {
     }
 
     @Test
-    public void wall_4period() {
+    public void wall_4period() throws VKError {
         logger.error("separator");
 
         List<WallPost> list = wall.getPosts4Period("1080446", false, 20);

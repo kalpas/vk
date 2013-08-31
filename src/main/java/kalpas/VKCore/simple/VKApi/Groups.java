@@ -1,7 +1,6 @@
 package kalpas.VKCore.simple.VKApi;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -10,6 +9,7 @@ import java.util.Map;
 
 import kalpas.VKCore.simple.DO.User;
 import kalpas.VKCore.simple.DO.VKError;
+import kalpas.VKCore.simple.VKApi.client.Result;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 
@@ -78,16 +78,21 @@ public class Groups {
         }
     }
 
-    private GetMembersResponse parseInputStream(InputStream stream) throws VKError {
+    private GetMembersResponse parseInputStream(Result result) throws VKError {
+        if (result.errCode != null) {
+            VKError error = new VKError(result.errMsg);
+            throw error;
+        }
         GetMembersResponse response = null;
         try {
-            String json = IOUtils.toString(stream, "UTF-8");
+            String json = IOUtils.toString(result.stream, "UTF-8");
             response = gson.fromJson(json, Response.class).response;
             if (response == null) {
-                throw new VKError(json);
+                throw VKError.fromJSON(json);
             }
         } catch (JsonIOException | JsonSyntaxException e) {
             logger.error("parsing failed", e);
+            throw new VKError(e.toString());
         } catch (IOException e) {
             logger.error(e);
         }
@@ -106,7 +111,7 @@ public class Groups {
 
     private String buildRequest(String gid, Integer offset) {
         Map<String, String> params = new HashMap<>();
-        params.put("gid", gid);
+        params.put("group_id", gid);
         params.put("count", max_count.toString());
         params.put("offset", offset.toString());
         return get + "?" + joiner.join(params);

@@ -2,6 +2,7 @@ package kalpas.VK.friends;
 
 import kalpas.VK.BaseApiTest;
 import kalpas.VKCore.simple.DO.User;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.stats.FriendStats;
 
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +30,7 @@ public class FriendStatsTest extends BaseApiTest {
     }
 
     @Test
-    public void test() {
+    public void test() throws VKError {
         Multimap<User, User> net = stats.getNetwork("1080446", true);
         logger.debug("keys " + net.keys().size());
         logger.debug("keySet " + net.keySet().size());

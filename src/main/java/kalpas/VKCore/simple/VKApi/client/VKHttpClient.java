@@ -26,8 +26,7 @@ public class VKHttpClient extends VKClient {
     private HttpClient      client;
     private HttpAsyncClient asyncClient;
 
-    private long            lastRequest = System.currentTimeMillis();
-    private long            offset      = 400L;
+
 
     @SuppressWarnings("unused")
     private VKHttpClient() {
@@ -80,26 +79,9 @@ public class VKHttpClient extends VKClient {
     }
 
     private String buildRequest(String request) {
-        request = "/method/" + request + "&access_token=" + this.accessToken;
+        request = "/method/" + request + "&v=5.0" + "&access_token=" + this.accessToken;
         request = request + "&sig=" + DigestUtils.md5Hex(request + secret);
-
         request = "http://" + api + request;
         return request;
-    }
-
-    private void sleepIfNeeded() {
-        long now = System.currentTimeMillis();
-        long diff = now - lastRequest;
-        if (diff < offset) {
-            try {
-                logger.debug("sleeping for {} s", offset - diff);
-                Thread.sleep(offset - diff);
-            } catch (InterruptedException e) {
-                logger.error(e);
-            }
-        } else {
-            logger.debug("no sleep");
-        }
-        lastRequest = System.currentTimeMillis();
     }
 }

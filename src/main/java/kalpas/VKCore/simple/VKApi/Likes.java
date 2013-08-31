@@ -1,8 +1,5 @@
 package kalpas.VKCore.simple.VKApi;
 
-import static kalpas.VKCore.util.DebugUtils.traceResponse;
-
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -14,7 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 import kalpas.VKCore.simple.DO.Like;
+import kalpas.VKCore.simple.DO.VKError;
 import kalpas.VKCore.simple.DO.WallPost;
+import kalpas.VKCore.simple.VKApi.client.Result;
 import kalpas.VKCore.simple.VKApi.client.VKClient;
 import kalpas.VKCore.simple.VKApi.client.VKClient.VKAsyncResult;
 import kalpas.VKCore.util.DebugUtils;
@@ -25,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
@@ -45,7 +43,6 @@ public class Likes {
     private JsonParser           parser;
 
     @Deprecated
-    private Map<String, String>  params    = new HashMap<>();
 
     @Inject
     private MapJoiner            joiner;
@@ -60,11 +57,11 @@ public class Likes {
         post, comment, photo, audio, video, note, sitepage;
     }
 
-    public void getLikes(List<WallPost> list) {
+    public void getLikes(List<WallPost> list) throws VKError {
         getLikes(list, false);
     }
 
-    public void getLikes(List<WallPost> list, boolean repostOnly) {
+    public void getLikes(List<WallPost> list, boolean repostOnly) throws VKError {
 
         Map<WallPost, VKAsyncResult> futures = new HashMap<>();
         for (WallPost post : list) {
@@ -88,7 +85,7 @@ public class Likes {
                 result = parseLikes(entry.getValue().get());
                 if (result != null) {
                     origin.count = result.count;
-                    origin.users = result.users;
+                    origin.items = result.items;
                 }
             }
         }
@@ -102,13 +99,13 @@ public class Likes {
 
 
 
-    public Like getLikes(LikeObject type, String ownerId, String itemId) {
+    public Like getLikes(LikeObject type, String ownerId, String itemId) throws VKError {
         return getLikes(type, ownerId, itemId, false);
     }
 
-    public Like getLikes(LikeObject type, String ownerId, String itemId, boolean repostOnly) {
-        InputStream stream = client.send(buildRequest(type, ownerId, itemId, 0, repostOnly));
-        Like like = parseLikes(stream);
+    public Like getLikes(LikeObject type, String ownerId, String itemId, boolean repostOnly) throws VKError {
+        Result result = client.send(buildRequest(type, ownerId, itemId, 0, repostOnly));
+        Like like = parseLikes(result);
 
         if (like.count > max_count) {
             getRemaining(type, ownerId, itemId, repostOnly, like);
@@ -117,13 +114,14 @@ public class Likes {
         return like;
     }
 
-    private void getRemaining(LikeObject type, String ownerId, String itemId, boolean repostOnly, Like like) {
+    private void getRemaining(LikeObject type, String ownerId, String itemId, boolean repostOnly, Like like)
+            throws VKError {
         List<VKAsyncResult> futures = submitRequests4remaining(type, ownerId, itemId, repostOnly, like);
-        like.users = Arrays.copyOf(like.users, like.count);
+        like.items = Arrays.copyOf(like.items, like.count);
         processResponses(like, futures);
     }
 
-    private void processResponses(Like like, List<VKAsyncResult> futures) {
+    private void processResponses(Like like, List<VKAsyncResult> futures) throws VKError {
         int offset = max_count;
         Like likeChunk = null;
         Iterator<VKAsyncResult> iterator;
@@ -139,8 +137,8 @@ public class Likes {
 
                 iterator.remove();
                 likeChunk = parseLikes(item.get());
-                System.arraycopy(likeChunk.users, 0, like.users, offset, likeChunk.users.length);
-                offset += likeChunk.users.length;
+                System.arraycopy(likeChunk.items, 0, like.items, offset, likeChunk.items.length);
+                offset += likeChunk.items.length;
             }
         }
     }
@@ -155,142 +153,29 @@ public class Likes {
         return futures;
     }
 
-    private Like parseLikes(InputStream stream) {
+    private Like parseLikes(Result result) throws VKError {
+        VKError error;
+        if (result.errCode != null) {
+            error = new VKError(result.errMsg);
+            throw error;
+        }
         Response response = null;
         try {
-            response = gson.fromJson(new InputStreamReader(stream,"UTF-8"), Response.class);
+            response = gson.fromJson(new InputStreamReader(result.stream, "UTF-8"), Response.class);
             if (response.response == null) {
                 logger.error("response was null");
             }
         } catch (JsonIOException | JsonSyntaxException e) {
-            logger.error("parsing failed", e);
+            String message = "parsing failed";
+            error = new VKError(message);
+            logger.error(message, e);
         } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error(e);
         }
         return response.response;
     }
 
-    // *******************************************************************************
 
-    @Deprecated
-    public Like get(String ownerId, String itemId) {
-        params.put("owner_id", ownerId);
-        return get(itemId);
-    }
-
-    @Deprecated
-    public List<WallPost> get(List<WallPost> posts) {
-        Integer step = "1".equals(params.get("friends_only")) ? 100 : 1000;
-        params.put("count", step.toString());
-        params.put("offset", "0");
-
-        Map<WallPost, VKAsyncResult> futures = new HashMap<>();
-
-        for (WallPost post : posts) {
-            params.put("owner_id", post.to_id);
-            futures.put(post, client.sendAsync(buildRequest(post.id)));
-        }
-
-        Like like;
-        VKAsyncResult result;
-        Map.Entry<WallPost, VKAsyncResult> entry;
-        Iterator<Map.Entry<WallPost, VKAsyncResult>> iteartor;
-
-        while (!futures.isEmpty()) {
-            iteartor = futures.entrySet().iterator();
-            while (iteartor.hasNext()) {
-                entry = iteartor.next();
-                result = entry.getValue();
-                if (!result.isDone()) {
-                    continue;
-                }
-                iteartor.remove();
-                like = getChunk(result.get());
-                Like target = entry.getKey().likes;
-                if (like != null) {
-                    target.users = like.users;
-                    target.count = like.count;
-                } else {
-                    entry.getKey().likes = like;
-                }
-            }
-        }
-
-        Like likes;
-        for (WallPost post : posts) {
-            likes = post.likes;
-            if (notAllUsersGot(likes)) {
-                getAll(post.id, step, likes);
-            }
-        }
-        return posts;
-    }
-
-    @Deprecated
-    public Like get(String itemId) {
-        Integer step = "1".equals(params.get("friends_only")) ? 100 : 1000;
-        params.put("count", step.toString());
-        params.put("offset", "0");
-
-        InputStream stream = client.send(buildRequest(itemId));
-        Like like = get(itemId, step, stream);
-
-        return like;
-    }
-
-    @Deprecated
-    private Like get(String itemId, Integer step, InputStream stream) {
-        Like like = getChunk(stream);
-        if (notAllUsersGot(like)) {
-            like = getAll(itemId, step, like);
-        }
-        return like;
-    }
-
-    @Deprecated
-    private boolean notAllUsersGot(Like like) {
-        return like != null && like.count != null && like.count > like.users.length;
-    }
-
-    @Deprecated
-    private Like getAll(String itemId, Integer step, Like like) {
-        InputStream stream;
-        List<String> usersLike = new ArrayList<>();
-        usersLike.addAll(Arrays.asList(like.users));
-        for (Integer offset = step; offset < like.count; offset += step) {
-            params.put("offset", offset.toString());
-            stream = client.send(buildRequest(itemId));
-            like = getChunk(stream);
-            usersLike.addAll(Arrays.asList(like.users));
-        }
-        like.users = usersLike.toArray(new String[0]);
-        return like;
-    }
-
-    @Deprecated
-    private Like getChunk(InputStream stream) {
-        Like like = null;
-        if (stream == null) {
-            logger.fatal("stream was null");
-            return null;
-        }
-
-        try {
-            // TODO remove debugging
-            JsonObject result = parser.parse(traceResponse(stream)).getAsJsonObject();
-            like = gson.fromJson(result.getAsJsonObject("response"), Like.class);
-        } catch (JsonSyntaxException | JsonIOException e) {
-            logger.error("error", e);
-        }
-        return like;
-    }
-
-    @Deprecated
-    protected String buildRequest(String itemId) {
-        params.put("item_id", itemId);
-        return get + "?" + joiner.join(params);
-    }
 
     private String buildRequest(LikeObject type, String ownerId, String itemId, Integer offset, boolean repostOnly) {
         Map<String, String> params = new HashMap<>();
@@ -306,44 +191,6 @@ public class Likes {
         }
         return get + "?" + joiner.join(params);
     }
-
-    /**
-     * could be post, comment, audio, video, note, sitepage
-     */
-    public Likes addType(String type) {
-        params.put("type", type);
-        return this;
-    }
-
-    public Likes addOwnerId(String ownerId) {
-        params.put("owner_id", ownerId);
-        return this;
-    }
-
-    public Likes addItemId(String itemId) {
-        params.put("item_id", itemId);
-        return this;
-    }
-
-    /**
-     * likes,copies
-     */
-    public Likes addFilter(String filter) {
-        params.put("filter", filter);
-        return this;
-    }
-
-    /**
-     * 
-     * @param friendsOnly
-     * @return
-     */
-    public Likes addFriemdsOnly(Integer friendsOnly) {
-        params.put("friends_only", friendsOnly.toString());
-        return this;
-    }
-
-    // /////////////////////
 
     private class Response {
         public Like response;
