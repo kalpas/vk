@@ -1,4 +1,7 @@
 /target
-
 /.settings
 .project
+/out
+*.log
+dependency-reduced*
+*.csv
