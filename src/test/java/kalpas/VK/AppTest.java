@@ -1,8 +1,5 @@
 package kalpas.VK;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -11,12 +8,11 @@ import java.util.Map;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import kalpas.simple.api.WallPost;
+import kalpas.VKCore.simple.DO.User;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
-import com.google.gson.Gson;
 
 /**
  * Unit test for simple App.
@@ -49,30 +45,18 @@ public class AppTest extends TestCase {
     }
 
     public void test1() {
-        VKUser a, b;
-        a = b = new VKUser();
-        a.setUid("uid");
+        User a, b;
+        a = new User("uid");
+        b = new User(null);
 
-        Function<VKUser, String> getUid = new Function<VKUser, String>() {
+        Function<User, String> getUid = new Function<User, String>() {
             @Override
-            public String apply(VKUser input) {
-                return input.getUid();
+            public String apply(User input) {
+                return input.uid;
             }
         };
 
         System.out.println(Joiner.on(",").skipNulls().join(Iterables.transform(Arrays.asList(a, b), getUid)));
     }
 
-    public void test2() {
-        WallPost post = null;
-        try {
-            Gson g = new Gson();
-            post = g.fromJson(new InputStreamReader(new FileInputStream(new File("1.json"))), WallPost.class);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.err.println(post);
-
-    }
 }

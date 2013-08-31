@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appenders>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %-5p [%t] %C{2} (%F:%L) - %m%xEx%n" />
+        </Console>
+    </appenders>
+    <loggers>
+        <logger name="org.apache.http" level="error" />
+        <logger name="kalpas.VKCore.simple.VKApi.client" level="debug" />
+        <root level="debug">
+            <appender-ref ref="STDOUT" />
+        </root>
+    </loggers>
+</configuration>
