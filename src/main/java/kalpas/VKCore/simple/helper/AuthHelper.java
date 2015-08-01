@@ -74,7 +74,7 @@ public class AuthHelper {
                         if (!isHttps) {
                             secret = response[3].split("=")[1];
                         }
-                        logger.info("access_token = " + accessToken + ", uid = " + selfUid);
+                        logger.info("access_token = " + accessToken + ", id = " + selfUid);
 
                         event.doit = false;
                         browser.stop();

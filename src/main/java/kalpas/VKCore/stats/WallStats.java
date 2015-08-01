@@ -35,6 +35,7 @@ import com.google.common.collect.Multiset;
 import com.google.inject.Inject;
 
 //FIXME damn, rewrite it!
+@Deprecated
 public class WallStats {
 
     @Inject
@@ -104,10 +105,10 @@ public class WallStats {
                 continue;
             }
 
-            for (String uid : post.likes.items) {// FIXME NPE
+            for (String id1 : post.likes.items) {// FIXME NPE
                 User element = null;
                 try {
-                    element = users.get(uid);
+                    element = users.get(id1);
                 } catch (VKError e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -176,10 +177,10 @@ public class WallStats {
                 continue;
             }
 
-            for (String uid : post.likes.items) {// FIXME NPE
+            for (String id1 : post.likes.items) {// FIXME NPE
                 User element = null;
                 try {
-                    element = users.get(uid);
+                    element = users.get(id1);
                 } catch (VKError e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -263,10 +264,10 @@ public class WallStats {
                 continue;
             }
 
-            for (String uid : post.likes.items) {
+            for (String id1 : post.likes.items) {
                 User element = null;
                 try {
-                    element = users.get(uid);
+                    element = users.get(id1);
                 } catch (VKError e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -375,10 +376,10 @@ public class WallStats {
                 continue;
             }
 
-            for (String uid : post.likes.items) {
+            for (String id1 : post.likes.items) {
                 User element = null;
                 try {
-                    element = users.get(uid);
+                    element = users.get(id1);
                 } catch (VKError e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();

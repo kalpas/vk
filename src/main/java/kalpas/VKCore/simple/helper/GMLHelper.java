@@ -35,7 +35,7 @@ public class GMLHelper {
             for (UserRelation node : edges.keySet()) {
                 bw.write("\tnode [");
                 bw.newLine();
-                bw.write("\t\tid " + node.user.uid);
+                bw.write("\t\tid " + node.user.id);
                 bw.newLine();
                 bw.write("\t\tlabel \"" + node.user.first_name + " " + node.user.last_name + "\"");
                 bw.newLine();
@@ -50,17 +50,17 @@ public class GMLHelper {
 
                     bw.write("\tedge [");
                     bw.newLine();
-                    bw.write("\t\tsource " + key.user.uid);
+                    bw.write("\t\tsource " + key.user.id);
                     bw.newLine();
-                    bw.write("\t\ttarget " + user.uid);
+                    bw.write("\t\ttarget " + user.id);
                     bw.newLine();
-                    bw.write("\t\tweight " + key.relations.get(user.uid).getWeight());
+                    bw.write("\t\tweight " + key.relations.get(user.id).getWeight());
                     bw.newLine();
-                    bw.write("\t\tlikes " + key.relations.get(user.uid).likes);
+                    bw.write("\t\tlikes " + key.relations.get(user.id).likes);
                     bw.newLine();
-                    bw.write("\t\tcomments " + key.relations.get(user.uid).comments);
+                    bw.write("\t\tcomments " + key.relations.get(user.id).comments);
                     bw.newLine();
-                    bw.write("\t\tposts " + key.relations.get(user.uid).wallPosts);
+                    bw.write("\t\tposts " + key.relations.get(user.id).wallPosts);
                     bw.newLine();
                     bw.write("\t]");
                     bw.newLine();
@@ -95,7 +95,7 @@ public class GMLHelper {
             for (User node : multimap.keySet()) {
                 bw.write("\tnode [");
                 bw.newLine();
-                bw.write("\t\tid " + node.uid);
+                bw.write("\t\tid " + node.id);
                 bw.newLine();
                 bw.write("\t\tlabel \"" + node.first_name + " " + node.last_name + "\"");
                 bw.newLine();
@@ -114,9 +114,9 @@ public class GMLHelper {
 
                     bw.write("\tedge [");
                     bw.newLine();
-                    bw.write("\t\tsource " + user.uid);
+                    bw.write("\t\tsource " + user.id);
                     bw.newLine();
-                    bw.write("\t\ttarget " + friend.uid);
+                    bw.write("\t\ttarget " + friend.id);
                     bw.newLine();
                     bw.write("\t]");
                     bw.newLine();
@@ -149,9 +149,12 @@ public class GMLHelper {
             bw.write("\tid 1");
             bw.newLine();
             for (User node : multimap.keySet()) {
+                if (node == null) {
+                    continue;
+                }
                 bw.write("\tnode [");
                 bw.newLine();
-                bw.write("\t\tid " + node.uid);
+                bw.write("\t\tid " + node.id);
                 bw.newLine();
                 bw.write("\t\tlabel \"" + node.first_name + " " + node.last_name + "\"");
                 bw.newLine();
@@ -163,16 +166,19 @@ public class GMLHelper {
                 bw.newLine();
             }
             for (User user : multimap.keySet()) {
+                if (user == null) {
+                    continue;
+                }
                 for (Map.Entry<EdgeProperties, User> friend : multimap.get(user)) {
-                    if (friend == null) {
+                    if (friend == null || friend.getValue() == null || friend.getKey() == null) {
                         continue;
                     }
 
                     bw.write("\tedge [");
                     bw.newLine();
-                    bw.write("\t\tsource " + user.uid);
+                    bw.write("\t\tsource " + user.id);
                     bw.newLine();
-                    bw.write("\t\ttarget " + friend.getValue().uid);
+                    bw.write("\t\ttarget " + friend.getValue().id);
                     bw.newLine();
                     bw.write("\t\tweight " + friend.getKey().reposts);
                     bw.newLine();
@@ -208,9 +214,12 @@ public class GMLHelper {
             bw.write("\tid 1");
             bw.newLine();
             for (User node : multimap.keySet()) {
+                if (node == null) {
+                    continue;
+                }
                 bw.write("\tnode [");
                 bw.newLine();
-                bw.write("\t\tid " + node.uid);
+                bw.write("\t\tid " + node.id);
                 bw.newLine();
                 bw.write("\t\tlabel \"" + node.first_name + " " + node.last_name + "\"");
                 bw.newLine();
@@ -222,16 +231,19 @@ public class GMLHelper {
                 bw.newLine();
             }
             for (User user : multimap.keySet()) {
+                if (user == null) {
+                    continue;
+                }
                 for (Map.Entry<EdgeProperties, User> friend : multimap.get(user)) {
-                    if (friend == null) {
+                    if (friend == null || friend.getValue() == null || friend.getKey() == null) {
                         continue;
                     }
 
                     bw.write("\tedge [");
                     bw.newLine();
-                    bw.write("\t\tsource " + friend.getValue().uid);
+                    bw.write("\t\tsource " + friend.getValue().id);
                     bw.newLine();
-                    bw.write("\t\ttarget " + user.uid);
+                    bw.write("\t\ttarget " + user.id);
                     bw.newLine();
                     bw.write("\t\tweight " + friend.getKey().likes);
                     bw.newLine();

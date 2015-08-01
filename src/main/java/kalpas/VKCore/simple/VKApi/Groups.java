@@ -100,8 +100,8 @@ public class Groups {
     }
 
     private void processResponse(List<User> members, GetMembersResponse response) {
-        for (String uid : response.users) {
-            members.add(new User(uid));
+        for (String id : response.users) {
+            members.add(new User(id));
         }
     }
 

@@ -24,16 +24,16 @@ public class FriendStats {
     @Inject
     private Users   users;
 
-    public Multimap<User, User> getNetwork(String uid, boolean withMe) {
+    public Multimap<User, User> getNetwork(String id, boolean withMe) {
         User me = null;
         try {
-            me = users.get(uid);
+            me = users.get(id);
         } catch (VKError e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
         List<User> friendList = null;
-        friendList = friends.get(uid);
+        friendList = friends.get(id);
         try {
             friendList = users.get(friendList);
         } catch (VKError e) {

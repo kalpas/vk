@@ -67,7 +67,7 @@ public class LegacyFriendsGraph {
         for (User user : friends) {
             List<WallPost> wall = null;
             try {
-                wall = WALL.getPosts(user.uid);
+                wall = WALL.getPosts(user.id);
             } catch (VKError e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
@@ -133,10 +133,10 @@ public class LegacyFriendsGraph {
             Map<String, Map<String, List<WallPost>>> likes, Map<String, Map<String, List<WallPost>>> comments,
             UserRelation relations, User user) {
         RelationCounters counters = new RelationCounters();
-        counters.wallPosts = tryGet(posts, relations.user.uid, user.uid);
-        counters.likes = tryGet(likes, relations.user.uid, user.uid);
-        counters.comments = tryGet(comments, relations.user.uid, user.uid);
-        relations.relations.put(user.uid, counters);
+        counters.wallPosts = tryGet(posts, relations.user.id, user.id);
+        counters.likes = tryGet(likes, relations.user.id, user.id);
+        counters.comments = tryGet(comments, relations.user.id, user.id);
+        relations.relations.put(user.id, counters);
     }
 
     private int tryGet(Map<String, Map<String, List<WallPost>>> likes, String fromId, String toId) {
@@ -162,15 +162,15 @@ public class LegacyFriendsGraph {
         if (likes == null || likes.items == null) {
             return;
         }
-        for (String uid : likes.items) {
-            getOrCreate(posts, uid, post.to_id).add(post);
+        for (String id : likes.items) {
+            getOrCreate(posts, id, post.to_id).add(post);
 
         }
     }
 
     private void countPosts(Map<String, Map<String, List<WallPost>>> posts, Map.Entry<User, List<WallPost>> entry,
             WallPost post) {
-        if (post.from_id != entry.getKey().uid) {
+        if (post.from_id != entry.getKey().id) {
             getOrCreate(posts, post.from_id, post.to_id).add(post);
         }
     }

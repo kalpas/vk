@@ -48,75 +48,82 @@ public class Friends {
         this.client = vkClient;
     }
 
-    private String buildRequest(String uid) {
+    private String buildRequest(String id) {
         Map<String, String> params = new HashMap<>();
-        params.put("uid", uid);
+        params.put("user_id", id);
+        params.put("fields", "domain");
         return get + "?" + joiner.join(params);
 
     }
 
-    public Map<User, List<User>> get(List<User> friends) {
+    public Map<User, List<User>> get(Iterable<User> friends) {
         errors.clear();
 
         Map<User, List<User>> friendsMap = new HashMap<User, List<User>>();
         Map<User, VKAsyncResult> futures = new HashMap<User, VKClient.VKAsyncResult>();
 
         for (User friend : friends) {
-            futures.put(friend, client.sendAsync(buildRequest(friend.uid)));
+            futures.put(friend, client.sendAsync(buildRequest(friend.id)));
         }
 
         process(friendsMap, futures);
         return friendsMap;
     }
 
-    public List<User> get(String uid) {
+    public List<User> get(String id) {
         errors.clear();
-        Result result = client.send(buildRequest(uid));
-        return processResponse(uid, result);
+        Result result = client.send(buildRequest(id));
+        return processResponse(id, result);
     }
 
     private List<User> processResponse(String uid, Result result) {
         List<User> friendsList = new ArrayList<>();
-        if (result.errCode == null) {
-            FriendsResponse response = null;
-            FriendsResponseWithFields responseWithFields = null;
-            try {
-                String json = IOUtils.toString(result.stream, "UTF-8");
-                JsonObject asJsonObject = parser.parse(json).getAsJsonObject().getAsJsonObject("response");
-                try {
-                    response = gson.fromJson(asJsonObject, FriendsResponse.class);
-                    for (String id : response.items) {
-                        friendsList.add(new User(id));
-                    }
-                } catch (JsonSyntaxException e) {
-                    try {
-                        responseWithFields = gson.fromJson(asJsonObject, FriendsResponseWithFields.class);
-                        friendsList.addAll(Arrays.asList(responseWithFields.items));
-                    } catch (JsonSyntaxException e1) {
-                        logException(e);
-                    }
-                }
-            } catch (JsonSyntaxException e) {
-                logException(e);
-            } catch (IOException e) {
-                logger.error(e);
-            }
-        } else {
+        if (result.errCode != null) {
             logCommunicationError(uid, result);
+            return friendsList;
+        }
+        FriendsResponse response = null;
+        FriendsResponseWithFields responseWithFields = null;
+        String json;
+        try {
+            json = IOUtils.toString(result.stream, "UTF-8");
+            JsonObject asJsonObject = parser.parse(json).getAsJsonObject().getAsJsonObject("response");
+            if (asJsonObject == null) {
+                VKError error = VKError.fromJSON(json);
+                errors.add(error);
+                return friendsList;
+            }
+            try {
+                response = gson.fromJson(asJsonObject, FriendsResponse.class);
+                for (String id : response.items) {
+                    friendsList.add(new User(id));
+                }
+
+            } catch (JsonSyntaxException e) {
+                try {
+                    responseWithFields = gson.fromJson(asJsonObject, FriendsResponseWithFields.class);
+                    friendsList.addAll(Arrays.asList(responseWithFields.items));
+                } catch (JsonSyntaxException e1) {
+                    VKError error = VKError.fromJSON(json);
+                    errors.add(error);
+                }
+            }
+        } catch (IOException e2) {
+            logger.fatal(e2);
         }
         return friendsList;
     }
 
     public List<User> get(User user) {
         errors.clear();
-        return get(user.uid);
+        return get(user.id);
     }
 
-    private void logCommunicationError(String uid, Result result) {
+    private void logCommunicationError(String id, Result result) {
         VKError error = new VKError(result.errMsg);
-        error.uid = uid;
+        error.id = id;
         errors.add(error);
-        logger.error("HTTP error for {} query", uid);
+        logger.error("HTTP error for {} query", id);
     }
 
     private void logException(Exception e) {
@@ -136,12 +143,11 @@ public class Friends {
                 entry = iterator.next();
                 if (entry.getValue().isDone()) {
                     iterator.remove();
-                    friendsMap.put(entry.getKey(), processResponse(entry.getKey().uid, entry.getValue().get()));
+                    friendsMap.put(entry.getKey(), processResponse(entry.getKey().id, entry.getValue().get()));
                 }
             }
         } while (!results.isEmpty());
     }
-
 
     public List<VKError> getErrors() {
         return errors;

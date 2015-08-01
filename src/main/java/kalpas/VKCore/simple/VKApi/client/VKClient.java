@@ -19,7 +19,7 @@ public abstract class VKClient {
     private Logger       logger = LogManager.getLogger(VKClient.class);
 
     private long         lastRequest = System.currentTimeMillis();
-    private long         offset      = 400L;
+    private long         offset      = 500L;
 
     public Result send(String request) {
         return handleResponseInternal(sendInternal(request));

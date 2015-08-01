@@ -26,7 +26,7 @@ public class VKError extends Exception {
 
     public String             json;
 
-    public String             uid;
+    public String             id;
 
     public VKError() {
         super("unknown VK error");
@@ -46,7 +46,7 @@ public class VKError extends Exception {
 
     @Override
     public String toString() {
-        return uid == null ? "" : uid + "# " + getErrorCode() + " " + getRobustError();
+        return id == null ? "" : id + "# " + getErrorCode() + " " + getRobustError();
 
     }
 

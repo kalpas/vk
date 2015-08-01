@@ -31,6 +31,8 @@ import com.google.inject.Inject;
 
 public class Users {
 
+    // FIXME use sets
+
     private static final String    requstName     = "users.get";
 
     @Inject
@@ -47,34 +49,35 @@ public class Users {
     @Inject
     private Locations              locations;
 
-    public final static String[]   ALL_FIELDS     = { "uid", "first_name", "last_name", "nickname", "screen_name",
+    public final static String[]   ALL_FIELDS     = { "id", "first_name", "last_name", "nickname", "screen_name",
             "sex", "bdate", "city", "country", "timezone", "photo", "photo_medium", "photo_big", "has_mobile",
             "contacts", "education", "online", "counters", "lists", "can_post", "can_see_all_posts", "activity",
             "last_seen", "relation", "exports", "wall_comments", "connections", "interests", "movies", "tv", "books",
             "games", "about", "domain"           };
 
-    public final static String[]   DEFAULT_FIELDS = { "uid", "first_name", "last_name", "sex" };
+    public final static String[]   DEFAULT_FIELDS = { "id", "first_name", "last_name", "sex" };
 
     @Inject
     public Users(VKClient vkClient) {
         this.client = vkClient;
     }
 
-    public User get(String uid) throws VKError {
-        User user = new User(uid);
+    public User get(String id) throws VKError {
+        User user = new User(id);
         return get(user);
     }
 
     public User get(User user) throws VKError {
-        Result result = client.send(buildRequest(user.uid));
+        Result result = client.send(buildRequest(user.id));
         List<User> users = getUsers(result);
         return users.get(0);
     }
 
+    // FIXME why not to pass users in chunks?
     public List<User> get(List<User> users) throws VKError {
         Map<User, VKAsyncResult> futures = new HashMap<User, VKClient.VKAsyncResult>();
         for (User user : users) {
-            futures.put(user, client.sendAsync(buildRequest(user.uid)));
+            futures.put(user, client.sendAsync(buildRequest(user.id)));
         }
 
         users = new ArrayList<>();
@@ -151,13 +154,13 @@ public class Users {
 
     // ********************** REQUEST BUILDING **********************
 
-    protected String buildRequest(String uid) {
-        return buildRequest(uid, ALL_FIELDS);// used to be DEFAULT_FIELDS
+    protected String buildRequest(String id) {
+        return buildRequest(id, ALL_FIELDS);// used to be DEFAULT_FIELDS
     }
 
-    protected String buildRequest(String uid, String[] fields) {
+    protected String buildRequest(String id, String[] fields) {
         Map<String, String> params = new HashMap<>();
-        params.put("user_ids", uid);
+        params.put("user_ids", id);
         params.put("fields", Joiner.on(",").skipNulls().join(fields));
         return requstName + "?" + joiner.join(params);
     }

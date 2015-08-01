@@ -2,7 +2,7 @@ package kalpas.VK;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.XMLConfigurationFactory;
+import org.apache.logging.log4j.core.config.xml.XmlConfigurationFactory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ public class MultiMapTest {
     @BeforeClass
     public static void before() {
         // BasicConfigurator.configure();
-        System.setProperty(XMLConfigurationFactory.CONFIGURATION_FILE_PROPERTY, "log4j2-test.xml");
+		System.setProperty(XmlConfigurationFactory.CONFIGURATION_FILE_PROPERTY, "log4j2-test.xml");
 
     }
 

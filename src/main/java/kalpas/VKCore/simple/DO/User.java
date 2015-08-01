@@ -9,14 +9,14 @@ public class User implements Serializable {
     /**
      * 
      */
-    private static final long serialVersionUID = -4504087520562844466L;
+    private static final long serialVersionid = -4504087520562844466L;
 
-    public final String       uid;
+    public final String       id;
     public String             first_name;
     public String             last_name;
     public String             nickname;
     // 2 - male, 1 - female
-    public int                sex;
+    public String             sex;
     public String             bdate;
     public String             city;
     public String             country;
@@ -47,7 +47,7 @@ public class User implements Serializable {
     // 5 - всё сложно
     // 6 - в активном поиске
     // 7 - влюблён/влюблена
-    public int                relation;
+    public String             relation;
     public Counters           counters;
     public String[]           exports;
     public String             wall_comments;
@@ -65,20 +65,20 @@ public class User implements Serializable {
     public String             photo_big;
     public String             domain;
 
-    public User(String uid) {
-        this.uid = uid;
+    public User(String id) {
+        this.id = id;
     }
 
     @Override
     public String toString() {
-        return Joiner.on(" ").skipNulls().join(uid, first_name, last_name);
+        return Joiner.on(" ").skipNulls().join(id, first_name, last_name);
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((uid == null) ? 0 : uid.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
         return result;
     }
 
@@ -94,11 +94,11 @@ public class User implements Serializable {
             return false;
         }
         User other = (User) obj;
-        if (uid == null) {
-            if (other.uid != null) {
+        if (id == null) {
+            if (other.id != null) {
                 return false;
             }
-        } else if (!uid.equals(other.uid)) {
+        } else if (!id.equals(other.id)) {
             return false;
         }
         return true;

@@ -46,13 +46,13 @@ public class AppTest extends TestCase {
 
     public void test1() {
         User a, b;
-        a = new User("uid");
+        a = new User("id");
         b = new User(null);
 
         Function<User, String> getUid = new Function<User, String>() {
             @Override
             public String apply(User input) {
-                return input.uid;
+                return input.id;
             }
         };
 
