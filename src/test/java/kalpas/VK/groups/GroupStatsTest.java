@@ -29,7 +29,7 @@ public class GroupStatsTest extends BaseApiTest {
 
     @Test
     public void groupStats_getMemberNet_hp() {
-        Multimap<User, User> multimap = stats.getMemberNetwork("45435572");
+		Multimap<User, User> multimap = stats.getMemberNetwork("94192358");
 
         assertNotNull(multimap);
         

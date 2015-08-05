@@ -116,7 +116,11 @@ public class Friends {
 
     public List<User> get(User user) {
         errors.clear();
+		if (user != null) {
         return get(user.id);
+		} else {
+			return new ArrayList<User>();
+		}
     }
 
     private void logCommunicationError(String id, Result result) {

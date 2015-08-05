@@ -93,6 +93,9 @@ public class GMLHelper {
             bw.write("\tid 1");
             bw.newLine();
             for (User node : multimap.keySet()) {
+				if (node == null) {
+					continue;
+				}
                 bw.write("\tnode [");
                 bw.newLine();
                 bw.write("\t\tid " + node.id);
