@@ -6,65 +6,56 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Arrays;
 import java.util.List;
 
-import kalpas.VK.BaseApiTest;
-import kalpas.VKCore.simple.DO.User;
-import kalpas.VKCore.simple.DO.VKError;
-import kalpas.VKCore.simple.VKApi.Users;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import kalpas.VK.BaseApiTest;
+import net.kalpas.VKCore.simple.DO.User;
+import net.kalpas.VKCore.simple.DO.VKError;
+import net.kalpas.VKCore.simple.VKApi.Users;
 
 public class UsersTest extends BaseApiTest {
 
-    private static final String selfUid = "1080446";
-    private Users users;
+	private static final String selfUid = "1080446";
 
-    @Before
-    public void before() {
-        users = getInjector().getInstance(Users.class);
-    }
+	@Autowired
+	private Users users;
 
-    @After
-    public void tearDown() {
-        users = null;
-    }
+	@Test
+	public void users_getByString_hp() throws VKError {
 
-    @Test
-    public void users_getByString_hp() throws VKError {
+		User me = users.get(selfUid);
 
-        User me = users.get(selfUid);
+		assertLoaded(me);
+	}
 
-        assertLoaded(me);
-    }
+	@Test
+	public void users_getByUser_hp() throws VKError {
 
-    @Test
-    public void users_getByUser_hp() throws VKError {
+		User me = users.get(new User(selfUid));
 
-        User me = users.get(new User(selfUid));
+		assertLoaded(me);
+	}
 
-        assertLoaded(me);
-    }
+	@Test
+	public void users_getList_hp() throws VKError {
 
-    @Test
-    public void users_getList_hp() throws VKError {
+		List<User> list = users.get(Arrays.asList(new User(selfUid), new User("1")));
 
-        List<User> list = users.get(Arrays.asList(new User(selfUid), new User("1")));
+		assertNotNull(list);
+		assertFalse(list.isEmpty());
 
-        assertNotNull(list);
-        assertFalse(list.isEmpty());
+		for (User user : list) {
+			assertLoaded(user);
+		}
+	}
 
-        for (User user : list) {
-            assertLoaded(user);
-        }
-    }
+	private void assertLoaded(User me) {
+		assertNotNull(me);
+		assertNotNull(me.first_name);
+		assertNotNull(me.last_name);
 
-    private void assertLoaded(User me) {
-        assertNotNull(me);
-        assertNotNull(me.first_name);
-        assertNotNull(me.last_name);
-        
-        getLogger().info(me);
-    }
+		getLogger().info(me);
+	}
 
 }

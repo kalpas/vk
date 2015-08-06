@@ -1,25 +1,16 @@
 package kalpas.VKCore.simple.core;
 
-import kalpas.VK.BaseApiTest;
-import kalpas.VKCore.IO.GmlWriter;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import kalpas.VK.BaseApiTest;
+import net.kalpas.VKCore.IO.GmlWriter;
+import net.kalpas.VKCore.simple.core.Core;
 
 public class CoreTest extends BaseApiTest {
 
+	@Autowired
     private Core core;
-
-    @Before
-    public void before() throws InterruptedException {
-        core = getInjector().getInstance(Core.class);
-    }
-
-    @After
-    public void tearDown() {
-        core = null;
-    }
 
     @Test
     public void test_hp() {

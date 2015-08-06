@@ -6,96 +6,86 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import kalpas.VK.BaseApiTest;
-import kalpas.VKCore.simple.DO.VKError;
-import kalpas.VKCore.simple.DO.WallPost;
-import kalpas.VKCore.simple.VKApi.Wall;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import kalpas.VK.BaseApiTest;
+import net.kalpas.VKCore.simple.DO.VKError;
+import net.kalpas.VKCore.simple.DO.WallPost;
+import net.kalpas.VKCore.simple.VKApi.Wall;
 
 public class WallTest extends BaseApiTest {
 
-    private Logger logger = LogManager.getLogger(WallTest.class.getName());
+	private Logger logger = LogManager.getLogger(WallTest.class.getName());
 
-    private Wall wall = null;
+	@Autowired
+	private Wall wall;
 
-    @Before
-    public void before() {
-        wall = getInjector().getInstance(Wall.class);
-    }
+	@Test
+	public void wall_get_hp() throws VKError {
 
-    @After
-    public void tearDown() {
-        wall = null;
-    }
+		// 48469829
+		logger.error("separator");
+		// List<WallPost> list = wall.get("-48282897");
+		List<WallPost> list = wall.getPosts("48282897", true);
 
-    @Test
-    public void wall_get_hp() throws VKError {
+		assertNotNull(list);
+		assertFalse(list.isEmpty());
 
-        // 48469829
-        logger.error("separator");
-        // List<WallPost> list = wall.get("-48282897");
-        List<WallPost> list = wall.getPosts("48282897", true);
-        
-        assertNotNull(list);
-        assertFalse(list.isEmpty());
+		logger.info(list.size());
+		for (WallPost post : list) {
+			logger.info(post);
+		}
 
-        logger.info(list.size());
-        for (WallPost post : list) {
-            logger.info(post);
-        }
+	}
 
-    }
+	@Test
+	public void wall_getWcount_hp() throws VKError {
 
-    @Test
-    public void wall_getWcount_hp() throws VKError {
+		logger.error("separator");
+		List<WallPost> list = wall.getPosts("48282897", true, 10);
 
-        logger.error("separator");
-        List<WallPost> list = wall.getPosts("48282897", true, 10);
+		assertNotNull(list);
+		assertFalse(list.isEmpty());
+		assertEquals(10, list.size());
 
-        assertNotNull(list);
-        assertFalse(list.isEmpty());
-        assertEquals(10, list.size());
+		logger.info(list.size());
+		for (WallPost post : list) {
+			logger.info(post);
+		}
 
-        logger.info(list.size());
-        for (WallPost post : list) {
-            logger.info(post);
-        }
+	}
 
-    }
+	@Test
+	public void wall_get1_hp() throws VKError {
 
-    @Test
-    public void wall_get1_hp() throws VKError {
+		logger.error("separator");
+		List<WallPost> list = wall.getPosts("1080446", 20);
 
-        logger.error("separator");
-        List<WallPost> list = wall.getPosts("1080446", 20);
+		assertNotNull(list);
+		assertFalse(list.isEmpty());
+		assertEquals(20, list.size());
 
-        assertNotNull(list);
-        assertFalse(list.isEmpty());
-        assertEquals(20, list.size());
+		logger.info(list.size());
+		for (WallPost post : list) {
+			logger.info(post);
+			logger.info(post.id);
 
-        logger.info(list.size());
-        for (WallPost post : list) {
-            logger.info(post);
-            logger.info(post.id);
+			DateTime time = new DateTime(Long.valueOf(post.date) * 1000L);
+			logger.info(time);
+		}
 
-            DateTime time = new DateTime(Long.valueOf(post.date) * 1000L);
-            logger.info(time);
-        }
+	}
 
-    }
+	@Test
+	public void wall_4period() throws VKError {
+		logger.error("separator");
 
-    @Test
-    public void wall_4period() throws VKError {
-        logger.error("separator");
-
-        List<WallPost> list = wall.getPosts4Period("1080446", false, 20);
-        assertNotNull(list);
-    }
+		List<WallPost> list = wall.getPosts4Period("1080446", false, 20);
+		assertNotNull(list);
+	}
 
 }

@@ -5,30 +5,20 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import kalpas.VK.BaseApiTest;
-import kalpas.VKCore.simple.DO.User;
-import kalpas.VKCore.simple.DO.VKError;
-import kalpas.VKCore.simple.VKApi.Groups;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import kalpas.VK.BaseApiTest;
+import net.kalpas.VKCore.simple.DO.User;
+import net.kalpas.VKCore.simple.DO.VKError;
+import net.kalpas.VKCore.simple.VKApi.Groups;
 
 public class GroupsTest extends BaseApiTest {
 
+	@Autowired
     private Groups groups;
 
     String         fearTheBeard = "32013533";
-
-    @Before
-    public void before() {
-        groups = getInjector().getInstance(Groups.class);
-    }
-
-    @After
-    public void tearDown() {
-        groups = null;
-    }
 
     @Test
     public void getMembers_hp() throws VKError {

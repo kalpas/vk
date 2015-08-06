@@ -1,31 +1,25 @@
 package kalpas.VK;
 
-import kalpas.VKCore.VKModule;
-import kalpas.VKCore.simple.helper.HttpClientContainer;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import net.kalpas.VKCore.VKModule;
+import net.kalpas.VKCore.simple.helper.HttpClientContainer;
 
+@ContextConfiguration(classes = VKModule.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 public class BaseApiTest {
 
     static private Logger logger = LogManager.getLogger(BaseApiTest.class);
 
-    private static Injector injector  = Guice.createInjector(new VKModule());
+    @Autowired
+    private static HttpClientContainer container;
 
-    private static HttpClientContainer container = null;
-
-    @BeforeClass
-    public static void prepareBeforeClass() {
-        // BasicConfigurator.configure();
-        // LogManager.getLogger("org.apache").setLevel(Level.ERROR);
-        container = getInjector().getInstance(HttpClientContainer.class);
-    }
-    
     @AfterClass
     public static void tearDownAfterClass() {
         try {
@@ -39,12 +33,5 @@ public class BaseApiTest {
      */
     public static Logger getLogger() {
         return logger;
-    }
-
-    /**
-     * @return the injector
-     */
-    public static Injector getInjector() {
-        return injector;
     }
 }

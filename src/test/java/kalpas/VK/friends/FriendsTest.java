@@ -9,79 +9,69 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import kalpas.VK.BaseApiTest;
-import kalpas.VKCore.simple.DO.User;
-import kalpas.VKCore.simple.DO.VKError;
-import kalpas.VKCore.simple.VKApi.Friends;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import kalpas.VK.BaseApiTest;
+import net.kalpas.VKCore.simple.DO.User;
+import net.kalpas.VKCore.simple.DO.VKError;
+import net.kalpas.VKCore.simple.VKApi.Friends;
 
 public class FriendsTest extends BaseApiTest {
 
-    private static final String selfUid = "1080446";
-    private Friends             friends;
+	private static final String selfUid = "1080446";
 
-    @Before
-    public void before() throws InterruptedException {
-        friends = getInjector().getInstance(Friends.class);
-        Thread.sleep(400L);
-    }
+	@Autowired
+	private Friends friends;
 
-    @After
-    public void tearDown() {
-        friends = null;
-    }
+	@Test
+	public void friends_get_hp() throws VKError {
+		List<User> list = friends.get(selfUid);
 
-    @Test
-    public void friends_get_hp() throws VKError {
-        List<User> list = friends.get(selfUid);
+		checkErrors();
+		assertFriendsLoaded(list);
 
-        checkErrors();
-        assertFriendsLoaded(list);
+	}
 
-    }
+	@Test
+	public void friends_getByUser_hp() throws VKError {
+		List<User> list = friends.get(new User(selfUid));
 
-    @Test
-    public void friends_getByUser_hp() throws VKError {
-        List<User> list = friends.get(new User(selfUid));
+		checkErrors();
+		assertFriendsLoaded(list);
 
-        checkErrors();
-        assertFriendsLoaded(list);
+	}
 
-    }
+	@Test
+	public void friends_loadList_hp() {
+		Map<User, List<User>> map = friends.get(Arrays.asList(new User(selfUid), new User("1")));
 
-    @Test
-    public void friends_loadList_hp() {
-        Map<User, List<User>> map = friends.get(Arrays.asList(new User(selfUid), new User("1")));
+		checkErrors();
 
-        checkErrors();
+		assertNotNull(map);
+		assertFalse(map.keySet().isEmpty());
 
-        assertNotNull(map);
-        assertFalse(map.keySet().isEmpty());
+		Iterator<Map.Entry<User, List<User>>> iterator = map.entrySet().iterator();
+		while (iterator.hasNext()) {
+			assertFriendsLoaded(iterator.next().getValue());
+		}
 
-        Iterator<Map.Entry<User, List<User>>> iterator = map.entrySet().iterator();
-        while (iterator.hasNext()) {
-            assertFriendsLoaded(iterator.next().getValue());
-        }
+	}
 
-    }
+	private void checkErrors() {
+		Iterator<VKError> i = friends.getErrors().iterator();
+		while (i.hasNext()) {
+			System.err.println(i.next());
+		}
+		assertTrue(friends.getErrors().isEmpty());
+	}
 
-    private void checkErrors() {
-        Iterator<VKError> i = friends.getErrors().iterator();
-        while (i.hasNext()) {
-            System.err.println(i.next());
-        }
-        assertTrue(friends.getErrors().isEmpty());
-    }
+	private void assertFriendsLoaded(List<User> list) {
+		assertNotNull(list);
+		assertFalse(list.isEmpty());
 
-    private void assertFriendsLoaded(List<User> list) {
-        assertNotNull(list);
-        assertFalse(list.isEmpty());
-
-        getLogger().info(list.toString());
-        getLogger().info(list.size());
-    }
+		getLogger().info(list.toString());
+		getLogger().info(list.size());
+	}
 
 }

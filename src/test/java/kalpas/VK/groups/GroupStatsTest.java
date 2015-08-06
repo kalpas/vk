@@ -1,44 +1,36 @@
 package kalpas.VK.groups;
 
 import static org.junit.Assert.assertNotNull;
-import kalpas.VK.BaseApiTest;
-import kalpas.VKCore.simple.DO.User;
-import kalpas.VKCore.simple.helper.GMLHelper;
-import kalpas.VKCore.stats.GroupStats;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Multimap;
 
+import kalpas.VK.BaseApiTest;
+import net.kalpas.VKCore.simple.DO.User;
+import net.kalpas.VKCore.simple.helper.GMLHelper;
+import net.kalpas.VKCore.stats.GroupStats;
+
 public class GroupStatsTest extends BaseApiTest {
 
-    private static final String purpur = "46944152";
-    private GroupStats stats;
+	@SuppressWarnings("unused")
+	private static final String purpur = "46944152";
 
-    @Before
-    public void before() {
-        stats = getInjector().getInstance(GroupStats.class);
-    }
+	@Autowired
+	private GroupStats stats;
 
-    @After
-    public void tearDown() {
-        stats = null;
-    }
-
-    @Test
-    public void groupStats_getMemberNet_hp() {
+	@Test
+	public void groupStats_getMemberNet_hp() {
 		Multimap<User, User> multimap = stats.getMemberNetwork("94192358");
 
-        assertNotNull(multimap);
-        
-        getLogger().info(multimap.keys().size());
-        getLogger().info(multimap.values().size());
-        
-        GMLHelper.writeToFile(getClass().toString(), multimap);
-        
+		assertNotNull(multimap);
 
-    }
+		getLogger().info(multimap.keys().size());
+		getLogger().info(multimap.values().size());
+
+		GMLHelper.writeToFile(getClass().toString(), multimap);
+
+	}
 
 }
