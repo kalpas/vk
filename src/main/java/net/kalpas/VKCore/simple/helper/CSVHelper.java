@@ -5,6 +5,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +40,17 @@ public class CSVHelper implements Closeable {
         file.write(Joiner.on("\t").join(values) + "\n");
 
     }
+
+	public void writeRow(List<String> values) throws IOException {
+		if (!isHeaderAdded) {
+			logger.warn("header wasn't added");
+		}
+		if (values.size() != columns) {
+			logger.warn("header has {} columns, while {} values were given", columns, values.size());
+		}
+		file.write(Joiner.on("\t").join(values) + "\n");
+
+	}
 
     @Override
     public void close() throws IOException {

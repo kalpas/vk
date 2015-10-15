@@ -24,7 +24,7 @@ public class FriendsTest extends BaseApiTest {
 	@Autowired
 	private Friends friends;
 
-	@Test
+    @Test
 	public void friends_get_hp() throws VKError {
 		List<User> list = friends.get(selfUid);
 

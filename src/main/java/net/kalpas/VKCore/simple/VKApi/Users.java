@@ -145,9 +145,9 @@ public class Users {
         User user = null;
         try {
             user = gson.fromJson(element, User.class);
-            City city = locations.getCityById(user.city);
+			City city = locations.getCityById(user.city.id);
             if (city != null)
-                user.city = city.title;
+				user.city.title = city.title;
         } catch (JsonSyntaxException e) {
             logger.error("exception while parsing json", e);
         }

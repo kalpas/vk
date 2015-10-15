@@ -25,7 +25,8 @@ public class HttpClientContainer {
 		if (instance == null) {
 			synchronized (this) {
 				if (instance == null) {
-					instance = HttpClients.createDefault();
+					instance = HttpClients.custom().disableConnectionState().disableContentCompression()
+					        .disableCookieManagement().setMaxConnPerRoute(Integer.MAX_VALUE).build();
 				}
 			}
 		}

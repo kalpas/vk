@@ -16,66 +16,68 @@ import net.kalpas.VKCore.simple.helper.HttpClientContainer;
 
 public class VKHttpsClient extends VKClient {
 
-    private Logger          logger = LogManager.getLogger(VKHttpsClient.class);
+	private static final String	VERSION	= "5.37";
 
-    private final String    api    = "api.vk.com";
-    private final String    accessToken;
+	private Logger				logger	= LogManager.getLogger(VKHttpsClient.class);
 
-    private HttpClient      client;
-    private HttpAsyncClient asyncClient;
+	private final String		api		= "api.vk.com";
+	private final String		accessToken;
 
-    @SuppressWarnings("unused")
-    private VKHttpsClient() {
-        accessToken = null;
-    }
+	private HttpClient			client;
+	private HttpAsyncClient		asyncClient;
 
-    public VKHttpsClient(String accessToken, HttpClientContainer container) {
-        this.accessToken = accessToken;
-        client = container.getInstance();
-        asyncClient = container.getAsyncInstance();
-    }
+	@SuppressWarnings("unused")
+	private VKHttpsClient() {
+		accessToken = null;
+	}
 
-    @Override
-    protected HttpResponse sendInternal(String request) {
-        Validate.notNull(accessToken);
+	public VKHttpsClient(String accessToken, HttpClientContainer container) {
+		this.accessToken = accessToken;
+		client = container.getInstance();
+		asyncClient = container.getAsyncInstance();
+	}
 
-        request = buildRequest(request);
+	@Override
+	protected HttpResponse sendInternal(String request) {
+		Validate.notNull(accessToken);
 
-        logger.debug("request {}", request);
+		request = buildRequest(request);
 
-        HttpResponse response = null;
-        HttpGet get = new HttpGet(request);
-        sleepIfNeeded();
-        try {
-            response = client.execute(get);
-        } catch (ClientProtocolException e) {
-            logger.error("ClientProtocolException", e);
-        } catch (IOException e) {
-            logger.error("IO exception", e);
-        }
+		logger.debug("request {}", request);
 
-        logger.debug(response);
+		HttpResponse response = null;
+		HttpGet get = new HttpGet(request);
+		sleepIfNeeded();
+		try {
+			response = client.execute(get);
+		} catch (ClientProtocolException e) {
+			logger.error("ClientProtocolException", e);
+		} catch (IOException e) {
+			logger.error("IO exception", e);
+		}
 
-        return response;
-    }
+		logger.debug(response);
 
-    @Override
-    protected Future<HttpResponse> sendAsyncInternal(String request) {
-        Validate.notNull(accessToken);
+		return response;
+	}
 
-        request = buildRequest(request);
+	@Override
+	protected Future<HttpResponse> sendAsyncInternal(String request) {
+		Validate.notNull(accessToken);
 
-        logger.debug("async request {}", request);
+		request = buildRequest(request);
 
-        HttpGet get = new HttpGet(request);
-        sleepIfNeeded();
-        return asyncClient.execute(get, null);
-    }
+		logger.debug("async request {}", request);
 
-    private String buildRequest(String request) {
-        request = "/method/" + request + "&v=5.0" + "&access_token=" + this.accessToken;
-        request = "https://" + api + request;
-        return request;
-    }
+		HttpGet get = new HttpGet(request);
+		sleepIfNeeded();
+		return asyncClient.execute(get, null);
+	}
+
+	private String buildRequest(String request) {
+		request = "/method/" + request + "&v=" + VERSION + "&access_token=" + this.accessToken;
+		request = "https://" + api + request;
+		return request;
+	}
 
 }

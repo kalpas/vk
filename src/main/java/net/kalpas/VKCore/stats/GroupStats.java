@@ -19,63 +19,63 @@ import net.kalpas.VKCore.simple.VKApi.Users;
 
 @Component
 public class GroupStats {
-    
-    private Logger  logger = LogManager.getLogger(GroupStats.class);
 
-    @Autowired
-    private Groups groups;
+	private Logger logger = LogManager.getLogger(GroupStats.class);
 
-    @Autowired
-    private Friends friends;
+	@Autowired
+	private Groups groups;
 
-    @Autowired
-    private Users   users;
+	@Autowired
+	private Friends friends;
 
-    public Multimap<User, User> getMemberNetwork(String gid) {
-        List<User> members = Collections.emptyList();
-        try{
-            members = groups.getMembers(gid);
-        } catch (VKError e) {
-            // TODO
-            // place code to recover from error
-            logger.error("vk returned error: {}", e.getMessage());
-            logger.error(e.getRobustError());
-        }
+	@Autowired
+	private Users users;
 
-        logger.debug("members " + members.size());
+	public Multimap<User, User> getMemberNetwork(String gid) {
+		List<User> members = Collections.emptyList();
+		try {
+			members = groups.getMembers(gid);
+		} catch (VKError e) {
+			// TODO
+			// place code to recover from error
+			logger.error("vk returned error: {}", e.getMessage());
+			logger.error(e.getRobustError());
+		}
 
-        try {
-            members = users.get(members);
-        } catch (VKError e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+		logger.debug("members " + members.size());
 
-        Multimap<User, User> memberNetwork = ArrayListMultimap.<User, User> create();
+		try {
+			members = users.get(members);
+		} catch (VKError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-        int progressCounter = 0;
-        for (User member : members) {
-            memberNetwork.put(member, null);
+		Multimap<User, User> memberNetwork = ArrayListMultimap.<User, User> create();
 
-            List<User> memberFriends = null;
-            memberFriends = friends.get(member);
-            if (memberFriends == null) {
-                continue;
-            }
-            for (User friend : memberFriends) {
-                if (members.contains(friend)) {
-                    memberNetwork.put(member, friend);
-                }
-            }
-            logger.info(progressCounter++ + " of " + members.size());
-        }
+		int progressCounter = 0;
+		for (User member : members) {
+			memberNetwork.put(member, null);
 
-        logger.debug("keys " + memberNetwork.keys().size());
-        logger.debug("keySet " + memberNetwork.keySet().size());
-        logger.debug("values " + memberNetwork.values().size());
+			List<User> memberFriends = null;
+			memberFriends = friends.get(member);
+			if (memberFriends == null) {
+				continue;
+			}
+			for (User friend : memberFriends) {
+				if (members.contains(friend)) {
+					memberNetwork.put(member, friend);
+				}
+			}
+			logger.info(progressCounter++ + " of " + members.size());
+		}
 
-        return memberNetwork;
-    }
+		logger.debug("keys " + memberNetwork.keys().size());
+		logger.debug("keySet " + memberNetwork.keySet().size());
+		logger.debug("values " + memberNetwork.values().size());
+
+		return memberNetwork;
+	}
 
 
 }
