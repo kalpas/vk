@@ -96,7 +96,7 @@ public class Messages {// TODO WIP
 
 	private ResponseWrapper getChunk(long offset, int out) {
 		ArrayList<Message> chunk = new ArrayList<>();
-		Result result = client.send(request(offset, 0, out));
+		Result result = client.send(request(offset, 200, out));
 		if (result.errCode != null) {
 			return null;
 		}

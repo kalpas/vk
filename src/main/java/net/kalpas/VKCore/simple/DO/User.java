@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import com.google.common.base.Joiner;
 
-public class User implements Serializable {
+public class User implements Serializable, Comparable<User> {
 
 	/**
 	 * 
@@ -117,5 +117,10 @@ public class User implements Serializable {
 		}
 		return true;
 
+	}
+
+	@Override
+	public int compareTo(User o) {
+		return this.id.compareTo(o.id);
 	}
 }

@@ -30,6 +30,12 @@ public class CSVHelper implements Closeable {
         columns = header.length;
     }
 
+	public void writeHeader(List<String> header) throws IOException {
+		file.write(Joiner.on("\t").join(header) + "\n");
+		isHeaderAdded = true;
+		columns = header.size();
+	}
+
     public void writeRow(String... values) throws IOException {
         if (!isHeaderAdded) {
             logger.warn("header wasn't added");

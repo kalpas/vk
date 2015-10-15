@@ -23,7 +23,6 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
-import net.kalpas.VKCore.simple.DO.City;
 import net.kalpas.VKCore.simple.DO.User;
 import net.kalpas.VKCore.simple.DO.VKError;
 import net.kalpas.VKCore.simple.VKApi.client.Result;
@@ -145,9 +144,9 @@ public class Users {
         User user = null;
         try {
             user = gson.fromJson(element, User.class);
-			City city = locations.getCityById(user.city.id);
-            if (city != null)
-				user.city.title = city.title;
+			// City city = locations.getCityById(user.city.id);//TODO
+			// if (city != null)
+			// user.city.title = city.title;
         } catch (JsonSyntaxException e) {
             logger.error("exception while parsing json", e);
         }
