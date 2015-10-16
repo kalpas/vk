@@ -4,10 +4,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -23,6 +20,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.Multisets;
 import com.google.common.collect.TreeMultiset;
 
@@ -69,51 +67,6 @@ public class MessagesTest extends BaseApiTest {
 	}
 
 	@Test
-	public void getAll() throws IOException, VKError {
-		List<Message> in = messages.get(1000, 0);
-		// List<Message> out = messages.get(1000,1);
-
-		Map<String, Map<String, Long>> matrix = new HashMap<>();
-
-		Map<String, Long> user = null;
-		for (Message message : in) {
-			user = matrix.get(message.user_id);
-			if (user == null) {
-				user = new HashMap<>();
-				matrix.put(message.user_id, user);
-			}
-			String date = message.getDate().toString();
-			Long count = user.get(date);
-			if (count == null) {
-				count = 0L;
-				user.put(date, count);
-			}
-			count++;
-		}
-
-		CSVHelper helper = new CSVHelper("test");
-
-		for (Entry<String, Map<String, Long>> entry : matrix.entrySet()) {
-			List<String> firstRow = new ArrayList<>();
-			List<String> secondRow = new ArrayList<>();
-
-			User person = users.get(entry.getKey());
-
-			firstRow.add("name/date");
-			secondRow.add(person.first_name + " " + person.last_name);
-			for (Entry<String, Long> item : entry.getValue().entrySet()) {
-				firstRow.add(item.getKey());
-				secondRow.add(item.getValue().toString());
-			}
-			helper.writeRow(firstRow);
-			helper.writeRow(secondRow);
-		}
-
-		helper.close();
-		// helper.
-	}
-
-	@Test
 	public void niceTry() throws IOException, VKError {
 		List<Message> in = messages.get(115826, 0);
 		// List<Message> out = messages.get(1000,1);
@@ -152,6 +105,116 @@ public class MessagesTest extends BaseApiTest {
 			row.add(day.toString());
 			row.addAll(total.elementSet().stream().map(user -> String.valueOf(day.data.count(user.id)))
 			        .collect(Collectors.toList()));
+			helper.writeRow(row);
+		}
+
+		helper.close();
+
+		Multisets.copyHighestCountFirst(wordCount).entrySet().forEach(entry -> {
+			System.out.println(String.format("%s %d", entry.getElement(), entry.getCount()));
+		});
+	}
+
+	@Test
+	public void niceTry2() throws IOException, VKError {
+		List<Message> in = messages.get(115826, 0);
+		// List<Message> out = messages.get(1000,1);
+		TreeMultiset<User> total = TreeMultiset.create();
+		Multiset<String> wordCount = HashMultiset.create();
+		List<Day> matrix = new ArrayList<>();
+
+		// .withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0)
+		DateTime today = new DateTime().withMillisOfDay(0);
+		Day current = new Day(today);
+
+		for (Message message : in) {
+			User sender = getCached(message.user_id);
+
+			wordCount.addAll(splitter.splitToList(message.body));
+			total.add(sender);
+
+			if (current.day.isAfter(message.getDate())) {
+				matrix.add(current);
+				current = new Day(current.day.minusDays(30));
+			}
+			current.data.add(message.user_id);
+
+		}
+
+		double average = total.entrySet().stream().map(Entry::getCount)
+		        .collect(Collectors.averagingInt(value -> value));
+
+		List<User> filter = Multisets.copyHighestCountFirst(total).entrySet().stream()
+		        .filter(entry -> entry.getCount() > average).map(Entry::getElement).collect(Collectors.toList());
+
+		CSVHelper helper = new CSVHelper("aboveAverage");
+
+		List<String> header = new ArrayList<>();
+		header.add("Date");
+		header.addAll(filter.stream().map(user -> String.format("%s %s", user.first_name, user.last_name))
+		        .collect(Collectors.toList()));
+		helper.writeHeader(header);
+
+		for (Day day : matrix) {
+			List<String> row = new ArrayList<>();
+			row.add(day.toString());
+			row.addAll(
+			        filter.stream().map(user -> String.valueOf(day.data.count(user.id))).collect(Collectors.toList()));
+			helper.writeRow(row);
+		}
+
+		helper.close();
+
+		Multisets.copyHighestCountFirst(wordCount).entrySet().forEach(entry -> {
+			System.out.println(String.format("%s %d", entry.getElement(), entry.getCount()));
+		});
+	}
+
+	@Test
+	public void niceTryOut() throws IOException, VKError {
+		List<Message> in = messages.get(123175, 1);
+		// List<Message> out = messages.get(1000,1);
+		TreeMultiset<User> total = TreeMultiset.create();
+		Multiset<String> wordCount = HashMultiset.create();
+		List<Day> matrix = new ArrayList<>();
+
+		// .withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(0)
+		DateTime today = new DateTime().withMillisOfDay(0);
+		Day current = new Day(today);
+
+		for (Message message : in) {
+			User sender = getCached(message.user_id);
+
+			wordCount.addAll(splitter.splitToList(message.body));
+			total.add(sender);
+
+			if (current.day.isAfter(message.getDate())) {
+				matrix.add(current);
+				current = new Day(current.day.minusDays(30));
+			}
+			current.data.add(message.user_id);
+
+		}
+
+		double average = total.entrySet().stream().map(Entry::getCount)
+		        .collect(Collectors.averagingInt(value -> value));
+
+		List<User> filter = Multisets.copyHighestCountFirst(total).entrySet().stream()
+		        .filter(entry -> entry.getCount() > average).map(Entry::getElement).collect(Collectors.toList());
+
+		CSVHelper helper = new CSVHelper("outAboveAverage");
+
+		List<String> header = new ArrayList<>();
+		header.add("Date");
+		header.addAll(filter.stream().map(user -> String.format("%s %s", user.first_name, user.last_name))
+		        .collect(Collectors.toList()));
+		helper.writeHeader(header);
+
+		for (Day day : matrix) {
+			List<String> row = new ArrayList<>();
+			row.add(day.toString());
+			row.addAll(
+			        filter.stream().map(user -> String.valueOf(day.data.count(user.id))).collect(Collectors.toList()));
 			helper.writeRow(row);
 		}
 
